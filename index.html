@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ca">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Comptes Anuals · Joc pedagògic</title>
+  <link rel="stylesheet" href="css/estil.css">
+</head>
+<body>
+  <header class="capcalera">
+    <div>
+      <h1>Comptes Anuals</h1>
+      <p class="subtitol" id="nom-escenari"></p>
+    </div>
+    <nav class="pestanyes" role="tablist">
+      <button role="tab" data-apartat="explora" aria-selected="true">Explora</button>
+      <button role="tab" data-apartat="practica" aria-selected="false">Practica</button>
+    </nav>
+  </header>
+
+  <main>
+    <section id="explora" class="apartat">
+      <div class="navegacio">
+        <button id="exp-anterior" class="boto">← Anterior</button>
+        <span id="exp-comptador" class="comptador"></span>
+        <button id="exp-seguent" class="boto primari">Següent →</button>
+      </div>
+      <article class="targeta pas">
+        <h2 id="exp-titol"></h2>
+        <p id="exp-enunciat" class="enunciat"></p>
+        <p id="exp-explicacio" class="explicacio"></p>
+        <details>
+          <summary>Veure l'assentament al llibre diari</summary>
+          <div id="exp-assentament"></div>
+        </details>
+      </article>
+      <div class="estats">
+        <section class="targeta">
+          <h3>Balanç de situació</h3>
+          <div id="exp-balanc"></div>
+        </section>
+        <section class="targeta">
+          <h3>Compte de pèrdues i guanys</h3>
+          <div id="exp-pig"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="practica" class="apartat" hidden>
+      <div id="prac-inici" class="targeta">
+        <h2>Construeix el balanç</h2>
+        <p>A cada pas se t'explica una operació de l'empresa. Has d'escriure com queda el balanç de situació després de l'operació: tria els conceptes, posa'ls a la massa que toca i escriu-ne l'import.</p>
+        <p>El balanç de cada pas comença amb el que tenies al pas anterior. Si continues amb errors, els aniràs arrossegant.</p>
+        <div class="modes">
+          <button class="mode targeta" data-mode="practica">
+            <strong>Pràctica</strong>
+            <span>Pots corregir cada pas, demanar una pista o veure la solució abans de seguir.</span>
+          </button>
+          <button class="mode targeta" data-mode="examen">
+            <strong>Simulacre d'examen</strong>
+            <span>Sense correcció ni pistes. Veuràs la nota i els errors al final.</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="prac-joc" hidden>
+        <div class="navegacio">
+          <span id="prac-mode" class="etiqueta"></span>
+          <span id="prac-comptador" class="comptador"></span>
+          <button id="prac-surt" class="boto">Surt</button>
+        </div>
+        <article class="targeta pas">
+          <h2 id="prac-titol"></h2>
+          <p id="prac-enunciat" class="enunciat"></p>
+          <div id="prac-pista" hidden></div>
+        </article>
+        <section class="targeta">
+          <h3>Balanç de situació després de l'operació</h3>
+          <div id="prac-balanc" class="editable"></div>
+          <div id="prac-totals" class="totals"></div>
+        </section>
+        <div id="prac-missatge" class="missatge" hidden></div>
+        <div class="accions">
+          <button id="prac-pista-boto" class="boto">Pista</button>
+          <button id="prac-solucio" class="boto">Mostra la solució</button>
+          <button id="prac-corregeix" class="boto">Corregeix</button>
+          <button id="prac-segueix" class="boto primari">Segueix →</button>
+        </div>
+      </div>
+
+      <div id="prac-final" class="targeta" hidden></div>
+    </section>
+  </main>
+
+  <script src="js/pgc.js"></script>
+  <script src="js/escenaris.js"></script>
+  <script src="js/motor.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

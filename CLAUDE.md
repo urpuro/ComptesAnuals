@@ -1,0 +1,7 @@
+# Instruccions per a Claude
+
+- Treballa sempre a la branca `dev` (fes-hi els commits i el push) tret que l'usuari digui el contrari. No facis servir branques `claude/...`.
+- Escriu el codi, els comentaris i la documentació en català.
+- Comptabilitat segons el Pla General de Comptabilitat (PGC).
+- Aplicació estàtica: HTML, CSS i JavaScript sense dependències ni pas de compilació, publicada a GitHub Pages. Ha de funcionar també obrint `index.html` directament.
+- Proves del motor: `node --test`.

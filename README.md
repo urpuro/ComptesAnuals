@@ -16,8 +16,30 @@ De la mateixa manera, el **compte de pèrdues i guanys** es va construint al lla
 
 L'objectiu és que l'alumne entengui *per què* els comptes són com són, i no només *què* hi diu.
 
+## Apartats
+
+- **Explora**: avança pas a pas per la història d'una empresa i observa com cada operació canvia el balanç de situació i el compte de pèrdues i guanys. Les partides que apareixen, pugen o baixen queden ressaltades, i cada pas inclou una explicació i l'assentament al llibre diari.
+- **Practica**: se't presenta una operació i has de construir el balanç resultant: afegir els conceptes a la massa patrimonial que toca i escriure'n els imports. Hi ha dos modes:
+  - *Pràctica*: pots corregir cada pas, demanar una pista o veure la solució, o bé seguir endavant.
+  - *Simulacre d'examen*: sense correcció ni pistes fins al final.
+
+  Si continues amb errors, els vas arrossegant als passos següents. Al final es puntua cada operació respecte al teu propi balanç anterior, de manera que un error inicial no penalitza tota la resta.
+
 ## Principis
 
 - **Senzill i accessible**: aplicació web que funciona al navegador, sense instal·lació.
 - **Stateless**: no hi ha servidor ni base de dades; tot l'estat viu al navegador.
 - **Pedagògic**: cada pas s'acompanya d'una explicació breu de què ha passat i per què.
+- **Rigorós**: segueix el Pla General de Comptabilitat (PGC).
+
+## Com fer-lo servir
+
+Obre `index.html` al navegador; no cal instal·lar res. Per publicar-lo, activa GitHub Pages al repositori (*Settings → Pages → Deploy from a branch*, carpeta arrel).
+
+Estructura:
+
+- `js/pgc.js`: catàleg de comptes del PGC, masses del balanç i partides de pèrdues i guanys.
+- `js/escenaris.js`: escenaris del joc (cada pas és un assentament de partida doble).
+- `js/motor.js`: càlcul del balanç i de la PiG i correcció dels balanços de l'alumne.
+- `js/app.js`: interfície.
+- `tests/`: proves del motor (`node --test`).

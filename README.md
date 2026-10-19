@@ -20,8 +20,8 @@ L'objectiu és que l'alumne entengui *per què* els comptes són com són, i no 
 
 La pàgina d'inici permet triar entre el **balanç de situació** i el **compte de pèrdues i guanys** (aquest darrer encara en preparació). L'apartat del balanç comença amb una explicació bàsica de què és el balanç i després deixa triar com començar:
 
-- **Explora**: avança pas a pas per la història d'una empresa i observa com cada operació canvia el balanç de situació i el compte de pèrdues i guanys. Les partides que apareixen, pugen o baixen queden ressaltades, i cada pas inclou una explicació i l'assentament al llibre diari.
-- **Practica**: se't presenta una operació i has de construir el balanç resultant: afegir els conceptes a la massa patrimonial que toca i escriure'n els imports. Hi ha dos modes:
+- **Explora** (dues exploracions: *bàsica* i *difícil*): avança pas a pas per la història d'una empresa i observa com cada operació canvia el balanç de situació i el compte de pèrdues i guanys. Les partides que apareixen, pugen o baixen queden ressaltades, i cada pas inclou una explicació i l'assentament al llibre diari.
+- **Practica** (cinc exercicis de dificultat creixent, amb empreses i imports diferents dels de l'apartat Explora): se't presenta una operació i has de construir el balanç resultant: afegir els conceptes a la massa patrimonial que toca i escriure'n els imports. Hi ha dos modes:
   - *Pràctica*: pots corregir cada pas, demanar una pista o veure la solució, o bé seguir endavant.
   - *Simulacre d'examen*: sense correcció ni pistes fins al final.
 
@@ -41,7 +41,7 @@ Obre `index.html` al navegador; no cal instal·lar res. Per publicar-lo, activa 
 Estructura:
 
 - `js/pgc.js`: catàleg de comptes del PGC, masses del balanç i partides de pèrdues i guanys.
-- `js/escenaris.js`: escenaris del joc (cada pas és un assentament de partida doble).
+- `js/escenaris/exploracions.js` i `js/escenaris/practiques.js`: escenaris del joc (cada pas és un assentament de partida doble).
 - `js/motor.js`: càlcul del balanç i de la PiG i correcció dels balanços de l'alumne.
 - `js/app.js`: interfície.
 - `tests/`: proves del motor (`node --test`).

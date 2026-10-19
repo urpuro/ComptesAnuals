@@ -2,9 +2,8 @@
 (function () {
   const { MASSES, COMPTES } = CA.pgc;
   const motor = CA.motor;
-  const escenari = CA.escenaris[0];
-  const passos = escenari.passos;
-  const estats = motor.estats(escenari);
+  const exploracions = CA.escenaris.filter((e) => e.tipus === 'exploracio');
+  const practiques = CA.escenaris.filter((e) => e.tipus === 'practica');
 
   const $ = (id) => document.getElementById(id);
   const esc = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -17,15 +16,12 @@
   }
 
   // ---------- Navegació (rutes amb #) ----------
-  const RUTES = {
-    '#/': 'inici',
-    '#/balanc': 'balanc',
-    '#/balanc/explora': 'explora',
-    '#/balanc/practica': 'practica',
-  };
-
+  // #/  ·  #/balanc  ·  #/balanc/explora[/<escenari>]  ·  #/balanc/practica
   function navega() {
-    const apartat = RUTES[location.hash] || 'inici';
+    const [, seccio, apartatRuta, idEscenari] = location.hash.split('/');
+    let apartat = 'inici';
+    if (seccio === 'balanc') apartat = ['explora', 'practica'].includes(apartatRuta) ? apartatRuta : 'balanc';
+    if (apartat === 'explora') obreExploracio(exploracions.find((e) => e.id === idEscenari));
     document.querySelectorAll('.apartat').forEach((s) => { s.hidden = s.id !== apartat; });
     const dinsJoc = apartat === 'explora' || apartat === 'practica';
     $('pestanyes').hidden = !dinsJoc;
@@ -33,19 +29,17 @@
       if (a.dataset.apartat === apartat) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    $('subtitol').textContent = apartat === 'inici'
-      ? 'Joc pedagògic per aprendre els comptes anuals'
-      : dinsJoc ? `Balanç de situació · ${escenari.nom}` : 'Balanç de situació';
+    $('subtitol').textContent = apartat === 'inici' ? 'Joc pedagògic per aprendre els comptes anuals' : 'Balanç de situació';
     window.scrollTo(0, 0);
   }
-  window.addEventListener('hashchange', navega);
-  navega();
 
   $('comenca').addEventListener('click', () => {
     location.hash = `#/balanc/${document.querySelector('input[name="manera"]:checked').value}`;
   });
 
   // ---------- Peces compartides ----------
+  const textOperacions = (e) => `${e.passos.length} operacions`;
+
   function htmlAssentament(assentament) {
     const files = assentament.map(([codi, deure, haver]) => `
       <tr class="${haver ? 'haver' : ''}">
@@ -64,7 +58,24 @@
   }
 
   // ---------- Explora ----------
-  let pasExplora = 1;
+  let exp = null;
+
+  $('exp-opcions').innerHTML = exploracions.map((e) => `
+    <a class="opcio targeta" href="#/balanc/explora/${e.id}">
+      <span class="nivell nivell-${esc(e.nivell.toLowerCase())}">${esc(e.nivell)}</span>
+      <strong>${esc(e.nom)}</strong>
+      <span>${esc(e.descripcio)}</span>
+      <span class="peu-opcio">${textOperacions(e)}</span>
+    </a>`).join('');
+
+  function obreExploracio(escenari) {
+    $('exp-tria').hidden = !!escenari;
+    $('exp-joc').hidden = !escenari;
+    if (!escenari) return;
+    if (!exp || exp.escenari !== escenari) exp = { escenari, estats: motor.estats(escenari), pas: 1 };
+    $('exp-nom').innerHTML = `<span class="nivell nivell-${esc(escenari.nivell.toLowerCase())}">${esc(escenari.nivell)}</span> <strong>${esc(escenari.nom)}</strong>`;
+    renderExplora();
+  }
 
   function htmlBalanc(balanc, mapaAbans) {
     const columna = (costat, titol, total) => {
@@ -115,28 +126,34 @@
   }
 
   function renderExplora() {
-    const pas = passos[pasExplora - 1];
-    const estat = estats[pasExplora];
-    const abans = estats[pasExplora - 1];
-    $('exp-comptador').textContent = `Pas ${pasExplora} de ${passos.length}`;
+    const { passos } = exp.escenari;
+    const pas = passos[exp.pas - 1];
+    const estat = exp.estats[exp.pas];
+    const abans = exp.estats[exp.pas - 1];
+    $('exp-comptador').textContent = `Pas ${exp.pas} de ${passos.length}`;
     $('exp-titol').textContent = pas.titol;
     $('exp-enunciat').textContent = pas.enunciat;
     $('exp-explicacio').textContent = pas.explicacio;
     $('exp-assentament').innerHTML = htmlAssentament(pas.assentament);
     $('exp-balanc').innerHTML = htmlBalanc(estat.balanc, abans.mapa);
     $('exp-pig').innerHTML = htmlPig(estat.pig, abans.pig);
-    $('exp-anterior').disabled = pasExplora === 1;
-    $('exp-seguent').disabled = pasExplora === passos.length;
+    $('exp-anterior').disabled = exp.pas === 1;
+    $('exp-seguent').disabled = exp.pas === passos.length;
   }
 
-  $('exp-anterior').addEventListener('click', () => { pasExplora--; renderExplora(); });
-  $('exp-seguent').addEventListener('click', () => { pasExplora++; renderExplora(); });
+  function mouExplora(salt) {
+    const nou = exp.pas + salt;
+    if (nou < 1 || nou > exp.escenari.passos.length) return;
+    exp.pas = nou;
+    renderExplora();
+  }
+  $('exp-anterior').addEventListener('click', () => mouExplora(-1));
+  $('exp-seguent').addEventListener('click', () => mouExplora(1));
   document.addEventListener('keydown', (e) => {
-    if ($('explora').hidden || e.target.closest('input, select, textarea')) return;
-    if (e.key === 'ArrowRight' && pasExplora < passos.length) { pasExplora++; renderExplora(); }
-    if (e.key === 'ArrowLeft' && pasExplora > 1) { pasExplora--; renderExplora(); }
+    if ($('exp-joc').hidden || $('explora').hidden || e.target.closest('input, select, textarea')) return;
+    if (e.key === 'ArrowRight') mouExplora(1);
+    if (e.key === 'ArrowLeft') mouExplora(-1);
   });
-  renderExplora();
 
   // ---------- Practica ----------
   const MISSATGES = {
@@ -146,10 +163,22 @@
     duplicat: 'Aquest concepte ja hi és en una altra fila.',
     incomplet: 'Tria un concepte i escriu un import vàlid.',
   };
-  const opcionsComptes = Object.entries(COMPTES)
-    .filter(([, c]) => c.massa)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([codi, c]) => `<option value="${codi}">${codi} · ${esc(c.nom)}</option>`).join('');
+  const opcionsComptes = Object.entries(CA.pgc.GRUPS).map(([grup, nomGrup]) => {
+    const opcions = Object.entries(COMPTES)
+      .filter(([codi, c]) => c.massa && codi[0] === grup)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([codi, c]) => `<option value="${codi}">${codi} · ${esc(c.nom)}</option>`).join('');
+    return `<optgroup label="${esc(nomGrup)}">${opcions}</optgroup>`;
+  }).join('');
+
+  $('prac-opcions').innerHTML = practiques.map((e, i) => `
+    <label class="opcio-escenari targeta">
+      <input type="radio" name="exercici" value="${e.id}" ${i === 0 ? 'checked' : ''}>
+      <span class="nivell nivell-${esc(e.nivell.toLowerCase())}">${esc(e.nivell)}</span>
+      <strong>${i + 1}. ${esc(e.nom)}</strong>
+      <span>${esc(e.descripcio)}</span>
+      <span class="peu-opcio">${textOperacions(e)}</span>
+    </label>`).join('');
 
   let prac = null;
   let seguentId = 1;
@@ -159,7 +188,13 @@
     { id: seguentId++, massa: COMPTES[codi].massa, codi, import: String(valor).replace('.', ',') }));
 
   function iniciaPractica(mode) {
-    prac = { mode, pas: 1, files: [], filesAnteriors: [], historial: [], correccio: null, ajudes: 0 };
+    const id = document.querySelector('input[name="exercici"]:checked').value;
+    const escenari = practiques.find((e) => e.id === id);
+    prac = {
+      escenari, passos: escenari.passos, estats: motor.estats(escenari),
+      mode, pas: 1, files: [], filesAnteriors: [], historial: [], correccio: null, ajudes: 0,
+    };
+    $('prac-nom').innerHTML = `<span class="nivell nivell-${esc(escenari.nivell.toLowerCase())}">${esc(escenari.nivell)}</span> <strong>${esc(escenari.nom)}</strong>`;
     $('prac-inici').hidden = true;
     $('prac-final').hidden = true;
     $('prac-joc').hidden = false;
@@ -167,6 +202,7 @@
   }
 
   function renderPas() {
+    const { passos } = prac;
     const pas = passos[prac.pas - 1];
     const examen = prac.mode === 'examen';
     $('prac-mode').textContent = examen ? "Simulacre d'examen" : 'Pràctica';
@@ -267,7 +303,7 @@
   });
 
   $('prac-corregeix').addEventListener('click', () => {
-    prac.correccio = motor.avalua(prac.files, estats[prac.pas].mapa);
+    prac.correccio = motor.avalua(prac.files, prac.estats[prac.pas].mapa);
     renderBalancEditable();
     const { errors, falten } = prac.correccio;
     if (errors === 0) {
@@ -279,15 +315,16 @@
   });
 
   $('prac-solucio').addEventListener('click', () => {
-    prac.files = filesDeMapa(estats[prac.pas].mapa);
+    prac.files = filesDeMapa(prac.estats[prac.pas].mapa);
     prac.correccio = null;
     prac.ajudes++;
     renderBalancEditable();
-    mostraMissatge(`<strong>Aquesta és la solució.</strong> ${esc(passos[prac.pas - 1].explicacio)}`, 'info');
+    mostraMissatge(`<strong>Aquesta és la solució.</strong> ${esc(prac.passos[prac.pas - 1].explicacio)}`, 'info');
   });
 
   $('prac-segueix').addEventListener('click', () => {
     const i = prac.pas;
+    const { estats, passos } = prac;
     const delta = motor.variacio(estats[i - 1].mapa, estats[i].mapa);
     const relatiu = motor.avalua(prac.files, motor.esperatRelatiu(prac.filesAnteriors, delta));
     const absolut = motor.avalua(prac.files, estats[i].mapa);
@@ -331,6 +368,7 @@
 
   function renderFinal() {
     $('prac-joc').hidden = true;
+    const { estats, passos } = prac;
     const final = $('prac-final');
     const encerts = prac.historial.filter((h) => h.relatiu.errors === 0).length;
     const nota = Math.round((encerts / passos.length) * 100) / 10;
@@ -347,7 +385,7 @@
       </tr>`;
     }).join('');
     final.innerHTML = `
-      <h2>Resultat ${prac.mode === 'examen' ? "del simulacre d'examen" : 'de la pràctica'}</h2>
+      <h2>Resultat ${prac.mode === 'examen' ? "del simulacre d'examen" : 'de la pràctica'}: ${esc(prac.escenari.nom)}</h2>
       <p class="nota">${String(nota).replace('.', ',')} <small>/ 10</small></p>
       <p>Has registrat bé <strong>${encerts}</strong> de ${passos.length} operacions${prac.ajudes ? ` (has fet servir ${prac.ajudes} ajud${prac.ajudes > 1 ? 'es' : 'a'})` : ''}.</p>
       <p class="explicacio">Una operació compta com a ben registrada si l'has aplicat bé sobre el teu propi balanç anterior, encara que aquest arrossegués errors. La darrera columna indica si el balanç coincidia exactament amb el correcte.</p>
@@ -356,15 +394,16 @@
         <tbody>${files}</tbody>
       </table>
       <div class="accions">
-        <button class="boto" id="final-explora">Revisa-ho a Explora</button>
-        <button class="boto primari" id="final-torna">Torna a començar</button>
+        <button class="boto primari" id="final-torna">Tria un altre exercici</button>
       </div>`;
     final.hidden = false;
     $('final-torna').addEventListener('click', () => {
       final.hidden = true;
       $('prac-inici').hidden = false;
     });
-    $('final-explora').addEventListener('click', () => { location.hash = '#/balanc/explora'; });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  window.addEventListener('hashchange', navega);
+  navega();
 })();

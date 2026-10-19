@@ -148,6 +148,30 @@ a.opcio:hover { border-color: var(--primari); transform: translateY(-2px); }
   background: var(--nou-fons); color: var(--nou) !important; padding: 2px 10px; border-radius: 999px;
 }
 
+/* Tria d'escenari */
+.nivell {
+  display: inline-block; font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+  padding: 2px 10px; border-radius: 999px; background: var(--puja-fons); color: var(--puja); width: fit-content;
+}
+.nivell-mitjà { background: var(--destaca); color: var(--text); }
+.nivell-difícil { background: var(--baixa-fons); color: var(--baixa); }
+.opcio .nivell { color: var(--puja); }
+.opcio .nivell-difícil { color: var(--baixa); }
+.peu-opcio { font-size: .85rem; margin-top: auto; padding-top: 4px; }
+.opcions-escenari { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; margin-bottom: 8px; }
+.opcio-escenari {
+  display: flex; flex-direction: column; gap: 4px; margin: 0; cursor: pointer; position: relative; padding: 12px;
+}
+.opcio-escenari input { position: absolute; opacity: 0; }
+.opcio-escenari strong { color: var(--primari); }
+.opcio-escenari span:not(.nivell) { color: var(--suau); font-size: .88rem; }
+.opcio-escenari:hover { border-color: var(--primari); }
+.opcio-escenari:has(input:checked) { border-color: var(--primari); box-shadow: 0 0 0 1px var(--primari); }
+.opcio-escenari:has(input:focus-visible) { outline: 2px solid var(--primari); outline-offset: 2px; }
+#prac-inici h3 { margin-top: 1.2em; }
+.escenari-cap { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px; }
+.escenari-cap a { color: var(--primari); font-size: .9rem; }
+
 /* Introducció al balanç */
 .intro { max-width: 800px; margin: 0 auto 16px; }
 .intro h3 { margin-top: 1.4em; }

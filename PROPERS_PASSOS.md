@@ -23,15 +23,18 @@ Llista orientativa d'idees per fer créixer l'aplicatiu. No és un compromís ni
 - [ ] Mode "endevina": abans de mostrar el pas següent, l'alumne prediu quines partides canviaran i en quin sentit.
 - [x] Mode "construeix" (apartat Practica): l'alumne omple el balanç de cada pas, amb correcció opcional o en simulacre d'examen.
 - [ ] El mateix exercici per al compte de pèrdues i guanys.
-- [ ] Escollir quin escenari practicar i barrejar-ne l'ordre dels passos quan sigui possible.
+- [x] Escollir quin escenari practicar (5 pràctiques) i quina exploració seguir (bàsica i difícil).
+- [ ] Barrejar l'ordre dels passos quan sigui possible, o generar imports aleatoris.
 - [ ] Revisar a la pantalla final el balanç de l'alumne al costat del correcte, pas a pas.
 - [x] Puntuació i retroacció immediata amb explicació dels errors habituals.
 - [ ] Preguntes de comprensió al final de l'escenari (p. ex. fons de maniobra, ràtios senzilles).
 
 ## 4. Contingut
 - [ ] Decidir si es presenta el balanç compte a compte (com ara) o agrupat per epígrafs del model oficial (Immobilitzat material, Deutors comercials...).
-- [ ] Diversos escenaris amb dificultat creixent (comerç, indústria, serveis).
-- [ ] Operacions més avançades: IVA, provisions, deteriorament, distribució de dividends, ampliació de capital.
+- [x] Diversos escenaris amb dificultat creixent (comerç, serveis, transport, restauració).
+- [ ] Escenari industrial (matèries primeres i productes acabats).
+- [x] Operacions més avançades: IVA, deteriorament, distribució de dividends, ampliació de capital, periodificacions, interessos meritats.
+- [ ] Provisions, subvencions, arrendament financer, inversions financeres.
 - [ ] Encadenar dos exercicis per veure el pas de resultat de l'exercici a reserves.
 - [ ] Glossari de partides amb definicions breus.
 

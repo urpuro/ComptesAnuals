@@ -88,6 +88,19 @@
     </section>
 
     <section id="explora" class="apartat" hidden>
+      <div id="exp-tria">
+        <div class="benvinguda">
+          <h2>Tria una exploració</h2>
+          <p>Segueix la història d'una empresa i mira com cada operació canvia el balanç i el compte de pèrdues i guanys.</p>
+        </div>
+        <div id="exp-opcions" class="opcions"></div>
+      </div>
+
+      <div id="exp-joc" hidden>
+      <div class="escenari-cap">
+        <span id="exp-nom"></span>
+        <a href="#/balanc/explora">Canvia d'exploració</a>
+      </div>
       <div class="navegacio">
         <button id="exp-anterior" class="boto">← Anterior</button>
         <span id="exp-comptador" class="comptador"></span>
@@ -112,6 +125,7 @@
           <div id="exp-pig"></div>
         </section>
       </div>
+      </div>
     </section>
 
     <section id="practica" class="apartat" hidden>
@@ -119,6 +133,9 @@
         <h2>Construeix el balanç</h2>
         <p>A cada pas se t'explica una operació de l'empresa. Has d'escriure com queda el balanç de situació després de l'operació: tria els conceptes, posa'ls a la massa que toca i escriu-ne l'import.</p>
         <p>El balanç de cada pas comença amb el que tenies al pas anterior. Si continues amb errors, els aniràs arrossegant.</p>
+        <h3>1. Tria l'exercici</h3>
+        <div id="prac-opcions" class="opcions-escenari" role="radiogroup" aria-label="Exercici"></div>
+        <h3>2. Tria el mode per començar</h3>
         <div class="modes">
           <button class="mode targeta" data-mode="practica">
             <strong>Pràctica</strong>
@@ -132,6 +149,7 @@
       </div>
 
       <div id="prac-joc" hidden>
+        <div class="escenari-cap"><span id="prac-nom"></span></div>
         <div class="navegacio">
           <span id="prac-mode" class="etiqueta"></span>
           <span id="prac-comptador" class="comptador"></span>
@@ -161,7 +179,8 @@
   </main>
 
   <script src="js/pgc.js"></script>
-  <script src="js/escenaris.js"></script>
+  <script src="js/escenaris/exploracions.js"></script>
+  <script src="js/escenaris/practiques.js"></script>
   <script src="js/motor.js"></script>
   <script src="js/app.js"></script>
 </body>

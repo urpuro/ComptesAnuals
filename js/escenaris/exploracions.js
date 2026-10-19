@@ -1,0 +1,278 @@
+// Escenaris de l'apartat Explora. Cada pas és una operació de l'empresa,
+// registrada com un assentament de partida doble: [compte, deure, haver].
+(function (root) {
+  const escenaris = [
+    {
+      id: 'basica',
+      tipus: 'exploracio',
+      nivell: 'Bàsica',
+      nom: 'Fusteria Pirineu, SL',
+      descripcio: "El primer exercici d'una petita empresa que compra i ven mobles.",
+      passos: [
+        {
+          titol: "Constitució de l'empresa",
+          enunciat: "Tres socis constitueixen Fusteria Pirineu, SL i aporten 100.000 € que ingressen al compte bancari de l'empresa.",
+          explicacio: "L'empresa rep diners (actiu: Bancs) i, a canvi, té una obligació amb els socis que no s'ha de retornar: el capital social, que forma part del patrimoni net. Actiu = Patrimoni net + Passiu.",
+          assentament: [['572', 100000, 0], ['100', 0, 100000]],
+        },
+        {
+          titol: "Compra d'una nau industrial",
+          enunciat: "L'empresa compra una nau industrial per 60.000 € i la paga per transferència bancària.",
+          explicacio: "Un actiu es transforma en un altre: baixa l'efectiu del banc i apareix una construcció, que l'empresa farà servir durant molts anys (actiu no corrent). El total del balanç no canvia.",
+          assentament: [['211', 60000, 0], ['572', 0, 60000]],
+        },
+        {
+          titol: 'Préstec bancari',
+          enunciat: "El banc concedeix a l'empresa un préstec de 50.000 € a retornar d'aquí a 5 anys. Els diners s'ingressen al compte.",
+          explicacio: "Augmenta l'efectiu i, alhora, apareix un deute amb el banc. Com que s'ha de retornar en més d'un any, és passiu no corrent.",
+          assentament: [['572', 50000, 0], ['170', 0, 50000]],
+        },
+        {
+          titol: 'Compra de maquinària',
+          enunciat: "Compra maquinària per 30.000 €. En paga 10.000 € per banc i la resta la pagarà d'aquí a 3 mesos.",
+          explicacio: "Apareix un nou actiu no corrent (maquinària). Una part es paga ara (baixa Bancs) i la resta queda com a deute amb el proveïdor de l'immobilitzat a curt termini (passiu corrent). No és «Proveïdors» perquè no són mercaderies.",
+          assentament: [['213', 30000, 0], ['572', 0, 10000], ['523', 0, 20000]],
+        },
+        {
+          titol: "Compra d'una furgoneta a terminis",
+          enunciat: "Compra una furgoneta de repartiment per 18.000 €. La pagarà d'aquí a 2 anys.",
+          explicacio: "Apareix un element de transport (actiu no corrent). Com que es pagarà en més d'un any, el deute amb el venedor és un proveïdor d'immobilitzat a llarg termini (passiu no corrent).",
+          assentament: [['218', 18000, 0], ['173', 0, 18000]],
+        },
+        {
+          titol: 'Compra de mercaderies',
+          enunciat: 'Compra mobles per revendre per valor de 40.000 €. Els pagarà al proveïdor més endavant.',
+          explicacio: "Segons el PGC, les compres de mercaderies es registren com una despesa (compte 600), no com un actiu. Per això el resultat de l'exercici passa a ser negatiu. Les existències que quedin al magatzem es regularitzaran al tancament. A canvi, apareix un deute amb el proveïdor.",
+          assentament: [['600', 40000, 0], ['400', 0, 40000]],
+        },
+        {
+          titol: 'Vendes',
+          enunciat: "Ven mobles per 70.000 €. Els clients en paguen 30.000 € al moment i els altres 40.000 € els pagaran d'aquí a 60 dies.",
+          explicacio: "La venda és un ingrés: millora el resultat de l'exercici. A canvi, entra efectiu al banc i neix un dret de cobrament sobre els clients (actiu corrent).",
+          assentament: [['572', 30000, 0], ['430', 40000, 0], ['700', 0, 70000]],
+        },
+        {
+          titol: 'Pagament de nòmines',
+          enunciat: "Paga per banc els sous dels treballadors (15.000 €) i la Seguretat Social a càrrec de l'empresa (5.000 €).",
+          explicacio: "Són despeses de personal: redueixen el resultat de l'exercici i, com que es paguen al moment, també l'efectiu.",
+          assentament: [['640', 15000, 0], ['642', 5000, 0], ['572', 0, 20000]],
+        },
+        {
+          titol: 'Llum i aigua',
+          enunciat: "Paga per banc les factures de llum i aigua de l'any: 1.500 €.",
+          explicacio: "Els subministraments són una despesa d'explotació: redueixen el resultat i l'efectiu.",
+          assentament: [['628', 1500, 0], ['572', 0, 1500]],
+        },
+        {
+          titol: 'Cobrament de clients',
+          enunciat: 'Els clients paguen 25.000 € dels 40.000 € pendents.',
+          explicacio: "Un actiu es transforma en un altre: baixen els drets de cobrament (Clients) i puja l'efectiu. No afecta el resultat: l'ingrés ja es va registrar quan es va fer la venda.",
+          assentament: [['572', 25000, 0], ['430', 0, 25000]],
+        },
+        {
+          titol: 'Pagament a proveïdors',
+          enunciat: 'Paga 30.000 € al proveïdor de mercaderies.',
+          explicacio: "Baixa l'efectiu i baixa el deute amb el proveïdor. El balanç s'escurça pels dos costats. Tampoc afecta el resultat.",
+          assentament: [['400', 30000, 0], ['572', 0, 30000]],
+        },
+        {
+          titol: 'Pagament de la maquinària',
+          enunciat: 'Passats els 3 mesos, paga per banc els 20.000 € que devia de la maquinària.',
+          explicacio: "Desapareix el deute amb el proveïdor d'immobilitzat i baixa l'efectiu. La maquinària continua a l'actiu: ja era de l'empresa des del dia de la compra.",
+          assentament: [['523', 20000, 0], ['572', 0, 20000]],
+        },
+        {
+          titol: 'Interessos del préstec',
+          enunciat: "Paga per banc 2.000 € d'interessos del préstec.",
+          explicacio: "Els interessos són una despesa financera: redueixen el resultat i l'efectiu. El deute amb el banc no canvia perquè no s'ha retornat capital.",
+          assentament: [['662', 2000, 0], ['572', 0, 2000]],
+        },
+        {
+          titol: 'Amortització anual',
+          enunciat: "Al final de l'any es registra el desgast de l'immobilitzat: 3.000 € de la nau, 3.000 € de la maquinària i 3.600 € de la furgoneta.",
+          explicacio: "L'amortització reparteix el cost de l'immobilitzat al llarg de la seva vida útil. És una despesa que no surt del banc. Al balanç, l'amortització acumulada resta del valor de l'immobilitzat.",
+          assentament: [['681', 9600, 0], ['281', 0, 9600]],
+        },
+        {
+          titol: "Regularització d'existències",
+          enunciat: 'Es fa inventari: al magatzem queden mobles per valor de 12.000 €.',
+          explicacio: "Les mercaderies que no s'han venut no són despesa d'aquest any: apareixen com a existències a l'actiu corrent i la variació d'existències corregeix les compres. El resultat millora en 12.000 €.",
+          assentament: [['300', 12000, 0], ['610', 0, 12000]],
+        },
+        {
+          titol: 'Préstec: part a curt termini',
+          enunciat: "Del préstec de 50.000 €, l'any vinent caldrà retornar-ne 10.000 €.",
+          explicacio: "El que s'ha de pagar en menys d'un any passa a ser passiu corrent. El deute total no canvia: només es reclassifica de llarg a curt termini.",
+          assentament: [['170', 10000, 0], ['520', 0, 10000]],
+        },
+        {
+          titol: 'Impost sobre societats',
+          enunciat: "El resultat abans d'impostos és de 8.900 €. L'impost sobre societats (25%) és de 2.225 €, que es pagarà l'any vinent.",
+          explicacio: "L'impost és una despesa que redueix el resultat. Com que encara no s'ha pagat, apareix un deute amb Hisenda a curt termini. El resultat final de l'exercici és de 6.675 €, que forma part del patrimoni net.",
+          assentament: [['630', 2225, 0], ['4752', 0, 2225]],
+        },
+      ],
+    },
+    {
+      id: 'dificil',
+      tipus: 'exploracio',
+      nivell: 'Difícil',
+      nom: 'Distribuïdora Garbí, SA',
+      descripcio: "Un exercici complet d'una empresa en marxa: IVA, nòmines amb retencions, dividends, ampliació de capital, periodificacions i deteriorament.",
+      passos: [
+        {
+          titol: "Balanç d'obertura",
+          enunciat: "Distribuïdora Garbí, SA comença el seu cinquè exercici. Té terrenys (40.000 €), construccions (120.000 €), mobiliari (15.000 €), equips informàtics (8.000 €) amb una amortització acumulada de 30.000 €, mercaderies (25.000 €), clients (18.000 €) i 34.000 € al banc. Es finança amb capital social (120.000 €), reserva legal (6.000 €), el resultat de l'exercici anterior (20.000 €), un préstec bancari (50.000 € a llarg termini i 10.000 € a curt), proveïdors (16.000 €) i l'impost sobre societats pendent de l'any passat (8.000 €).",
+          explicacio: "Una empresa en marxa no comença de zero: el balanç d'obertura és el balanç de tancament de l'any anterior. Fixa't que el resultat de l'exercici anterior encara és al patrimoni net, però el compte de pèrdues i guanys d'aquest any comença buit.",
+          assentament: [
+            ['210', 40000, 0], ['211', 120000, 0], ['216', 15000, 0], ['217', 8000, 0], ['281', 0, 30000],
+            ['300', 25000, 0], ['430', 18000, 0], ['572', 34000, 0],
+            ['100', 0, 120000], ['112', 0, 6000], ['129', 0, 20000], ['170', 0, 50000], ['520', 0, 10000],
+            ['400', 0, 16000], ['4752', 0, 8000],
+          ],
+        },
+        {
+          titol: "Distribució del resultat de l'any anterior",
+          enunciat: "La junta d'accionistes decideix repartir el benefici de 20.000 €: 2.000 € a reserva legal, 6.000 € a reserves voluntàries i 12.000 € en dividends, que es pagaran més endavant.",
+          explicacio: "El resultat de l'any anterior desapareix i es reparteix: la part que es queda a l'empresa passa a reserves (patrimoni net) i la part que es repartirà als socis es converteix en un deute (dividend actiu a pagar, passiu corrent). El patrimoni net baixa en 12.000 €.",
+          assentament: [['129', 20000, 0], ['112', 0, 2000], ['113', 0, 6000], ['526', 0, 12000]],
+        },
+        {
+          titol: 'Pagament de dividends',
+          enunciat: "Paga els dividends per banc. L'empresa ha de retenir un 19% (2.280 €) i ingressar-lo a Hisenda més endavant; els socis reben 9.720 €.",
+          explicacio: "Desapareix el deute amb els socis. Una part surt del banc i la retenció queda com a deute amb Hisenda (passiu corrent) fins que s'ingressi.",
+          assentament: [['526', 12000, 0], ['4751', 0, 2280], ['572', 0, 9720]],
+        },
+        {
+          titol: "Pagament de l'impost de l'any anterior",
+          enunciat: "Paga per banc els 8.000 € de l'impost sobre societats de l'exercici anterior.",
+          explicacio: "Es cancel·la un deute amb Hisenda i baixa l'efectiu. No és despesa d'aquest any: ja es va comptabilitzar l'any passat.",
+          assentament: [['4752', 8000, 0], ['572', 0, 8000]],
+        },
+        {
+          titol: 'Ampliació de capital amb prima',
+          enunciat: "S'emeten 3.000 accions noves de 10 € de valor nominal a un preu de 12 € cadascuna. Els nous accionistes ingressen 36.000 € al banc.",
+          explicacio: "El capital social augmenta pel valor nominal (30.000 €). Els 6.000 € que es paguen per sobre del nominal són la prima d'emissió, que també és patrimoni net.",
+          assentament: [['572', 36000, 0], ['100', 0, 30000], ['110', 0, 6000]],
+        },
+        {
+          titol: 'Compra de mercaderies amb IVA',
+          enunciat: "Compra mercaderies per 30.000 € més un 21% d'IVA (6.300 €). Ho pagarà al proveïdor més endavant.",
+          explicacio: "La compra és despesa (600) per l'import sense IVA. L'IVA suportat no és despesa: és un dret davant d'Hisenda (actiu corrent) que es compensarà amb l'IVA de les vendes. El deute amb el proveïdor inclou l'IVA: 36.300 €.",
+          assentament: [['600', 30000, 0], ['472', 6300, 0], ['400', 0, 36300]],
+        },
+        {
+          titol: 'Venda amb IVA',
+          enunciat: "Ven mercaderies per 90.000 € més un 21% d'IVA (18.900 €). Els clients pagaran més endavant.",
+          explicacio: "L'ingrés per vendes és l'import sense IVA. L'IVA repercutit és diners que l'empresa cobra per compte d'Hisenda: és un deute (passiu corrent). El client deu el total: 108.900 €.",
+          assentament: [['430', 108900, 0], ['700', 0, 90000], ['477', 0, 18900]],
+        },
+        {
+          titol: 'Cobrament de clients',
+          enunciat: "Cobra per banc 88.000 € de clients (els 18.000 € de l'any passat i 70.000 € de la venda nova).",
+          explicacio: 'Baixen els drets de cobrament i puja l’efectiu. El resultat no canvia.',
+          assentament: [['572', 88000, 0], ['430', 0, 88000]],
+        },
+        {
+          titol: 'Pagament a proveïdors',
+          enunciat: "Paga per banc 36.000 € a proveïdors (els 16.000 € de l'any passat i 20.000 € de la compra nova).",
+          explicacio: "Baixen l'efectiu i el deute amb els proveïdors. El resultat no canvia.",
+          assentament: [['400', 36000, 0], ['572', 0, 36000]],
+        },
+        {
+          titol: 'Nòmina amb retencions',
+          enunciat: "Nòmina: sous bruts de 12.000 €. Es retenen 1.800 € d'IRPF i 760 € de Seguretat Social del treballador; la Seguretat Social a càrrec de l'empresa és de 3.800 €. Es paga el líquid (9.440 €) per banc; la Seguretat Social es pagarà el mes vinent.",
+          explicacio: "La despesa de personal és el sou brut més la Seguretat Social de l'empresa (15.800 €). Però al banc només surt el líquid: la retenció d'IRPF queda com a deute amb Hisenda i les dues quotes de Seguretat Social (760 + 3.800 €) com a deute amb la Seguretat Social.",
+          assentament: [['640', 12000, 0], ['642', 3800, 0], ['4751', 0, 1800], ['476', 0, 4560], ['572', 0, 9440]],
+        },
+        {
+          titol: 'Pagament de la Seguretat Social',
+          enunciat: 'Paga per banc els 4.560 € deguts a la Seguretat Social.',
+          explicacio: "Es cancel·la el deute i baixa l'efectiu. No hi ha despesa nova: ja es va registrar amb la nòmina.",
+          assentament: [['476', 4560, 0], ['572', 0, 4560]],
+        },
+        {
+          titol: "Lloguer d'un magatzem",
+          enunciat: "L'1 d'octubre lloga un magatzem i paga per avançat un any sencer de lloguer: 6.000 € més 1.260 € d'IVA.",
+          explicacio: "De moment, tot el lloguer es registra com a despesa (621) i l'IVA suportat com a dret davant d'Hisenda. Al tancament caldrà corregir la part que correspon a l'any vinent.",
+          assentament: [['621', 6000, 0], ['472', 1260, 0], ['572', 0, 7260]],
+        },
+        {
+          titol: "Venda d'un equip informàtic",
+          enunciat: "Ven per 2.000 € més 420 € d'IVA, cobrats per banc, els equips informàtics. Havien costat 8.000 € i la seva amortització acumulada era de 5.000 €.",
+          explicacio: "Els equips surten del balanç pel seu cost i, amb ells, la seva amortització acumulada. El valor que tenien als llibres era de 3.000 € i s'han venut per 2.000 €: hi ha una pèrdua de 1.000 € (671). L'IVA de la venda és IVA repercutit.",
+          assentament: [['572', 2420, 0], ['281', 5000, 0], ['671', 1000, 0], ['217', 0, 8000], ['477', 0, 420]],
+        },
+        {
+          titol: "Compra d'un programa informàtic",
+          enunciat: "Compra un programa de gestió per 4.000 € més 840 € d'IVA. El pagarà d'aquí a 6 mesos.",
+          explicacio: "El programa és immobilitzat intangible (actiu no corrent). El deute, IVA inclòs, és amb un proveïdor d'immobilitzat a curt termini.",
+          assentament: [['206', 4000, 0], ['472', 840, 0], ['523', 0, 4840]],
+        },
+        {
+          titol: 'Un client en concurs de creditors',
+          enunciat: "Un client que deu 3.000 € entra en concurs de creditors. L'empresa el reclassifica com a dubtós i, com que preveu que no cobrarà, en registra el deteriorament per tot l'import.",
+          explicacio: "El dret de cobrament passa a «Clients de cobrament dubtós». A més, es reconeix una pèrdua (694) i un compte corrector (490) que resta de l'actiu. L'actiu corrent baixa en 3.000 € i el resultat també.",
+          assentament: [['436', 3000, 0], ['430', 0, 3000], ['694', 3000, 0], ['490', 0, 3000]],
+        },
+        {
+          titol: "Liquidació de l'IVA",
+          enunciat: "Es fa la liquidació de l'IVA: es compensa l'IVA repercutit (19.320 €) amb el suportat (8.400 €). La diferència, 10.920 €, s'ingressarà a Hisenda el mes vinent.",
+          explicacio: "L'IVA suportat i el repercutit desapareixen i en queda només la diferència: un deute amb Hisenda (4750). Fixa't que l'IVA no ha afectat en cap moment el resultat.",
+          assentament: [['477', 19320, 0], ['472', 0, 8400], ['4750', 0, 10920]],
+        },
+        {
+          titol: 'Ingrés de les retencions',
+          enunciat: "Ingressa a Hisenda per banc les retencions practicades durant l'any: 4.080 € (2.280 € dels dividends i 1.800 € de la nòmina).",
+          explicacio: "L'empresa havia retingut aquests diners per compte d'Hisenda. En ingressar-los, desapareix el deute i baixa l'efectiu.",
+          assentament: [['4751', 4080, 0], ['572', 0, 4080]],
+        },
+        {
+          titol: 'Quota del préstec',
+          enunciat: "Paga per banc la quota anual del préstec: 10.000 € de capital (la part que vencia aquest any) i 2.500 € d'interessos.",
+          explicacio: "El capital retornat redueix el deute a curt termini; els interessos són despesa financera.",
+          assentament: [['520', 10000, 0], ['662', 2500, 0], ['572', 0, 12500]],
+        },
+        {
+          titol: 'Interessos meritats pendents',
+          enunciat: "Al tancament, el préstec ha generat 1.200 € d'interessos des de l'última quota que no es pagaran fins l'any vinent.",
+          explicacio: "Els interessos són d'aquest any encara que no s'hagin pagat (principi de meritació): són despesa i alhora un deute a curt termini amb el banc.",
+          assentament: [['662', 1200, 0], ['527', 0, 1200]],
+        },
+        {
+          titol: 'Amortització anual',
+          enunciat: "Amortització de l'exercici: 2.400 € de les construccions, 1.500 € del mobiliari i 1.000 € del programa informàtic.",
+          explicacio: "L'immobilitzat material s'amortitza amb el compte 281 i l'intangible amb el 280. Tots dos són correctors: resten de l'actiu no corrent. Els terrenys no s'amortitzen.",
+          assentament: [['681', 3900, 0], ['680', 1000, 0], ['281', 0, 3900], ['280', 0, 1000]],
+        },
+        {
+          titol: 'Periodificació del lloguer',
+          enunciat: "Del lloguer pagat per avançat (6.000 € per 12 mesos), 9 mesos corresponen a l'any vinent.",
+          explicacio: "Només 3 mesos de lloguer són despesa d'aquest any. Els altres 4.500 € es treuen de la despesa i queden com a despeses anticipades (actiu corrent).",
+          assentament: [['480', 4500, 0], ['621', 0, 4500]],
+        },
+        {
+          titol: "Regularització d'existències",
+          enunciat: "Les existències inicials eren de 25.000 €. L'inventari final dona 21.000 €.",
+          explicacio: "Es dona de baixa l'estoc inicial i es dona d'alta el final. Com que hi ha 4.000 € menys de mercaderies, la variació d'existències és una despesa més de 4.000 €.",
+          assentament: [['610', 25000, 0], ['300', 0, 25000], ['300', 21000, 0], ['610', 0, 21000]],
+        },
+        {
+          titol: 'Préstec: part a curt termini',
+          enunciat: "Del préstec a llarg termini (50.000 €), l'any vinent caldrà retornar-ne 10.000 €.",
+          explicacio: 'Es reclassifica de passiu no corrent a passiu corrent la part que venç en menys d’un any.',
+          assentament: [['170', 10000, 0], ['520', 0, 10000]],
+        },
+        {
+          titol: 'Impost sobre societats',
+          enunciat: "El resultat abans d'impostos és de 26.100 €. L'impost sobre societats (25%) és de 6.525 €, que es pagarà l'any vinent.",
+          explicacio: "L'impost redueix el resultat i queda com a deute amb Hisenda. El resultat de l'exercici, 19.575 €, s'incorpora al patrimoni net; l'any vinent la junta decidirà com repartir-lo, com s'ha fet al pas 2.",
+          assentament: [['630', 6525, 0], ['4752', 0, 6525]],
+        },
+      ],
+    },
+  ];
+
+  if (typeof module !== 'undefined' && module.exports) module.exports = escenaris;
+  else (root.CA = root.CA || {}).escenaris = (root.CA.escenaris || []).concat(escenaris);
+})(this);

@@ -9,17 +9,85 @@
 <body>
   <header class="capcalera">
     <div>
-      <h1>Comptes Anuals</h1>
-      <p class="subtitol" id="nom-escenari"></p>
+      <h1><a href="#/" class="inici-enllac">Comptes Anuals</a></h1>
+      <p class="subtitol" id="subtitol"></p>
     </div>
-    <nav class="pestanyes" role="tablist">
-      <button role="tab" data-apartat="explora" aria-selected="true">Explora</button>
-      <button role="tab" data-apartat="practica" aria-selected="false">Practica</button>
+    <nav class="pestanyes" id="pestanyes" hidden>
+      <a href="#/balanc/explora" data-apartat="explora">Explora</a>
+      <a href="#/balanc/practica" data-apartat="practica">Practica</a>
     </nav>
   </header>
 
   <main>
-    <section id="explora" class="apartat">
+    <section id="inici" class="apartat">
+      <div class="benvinguda">
+        <h2>Aprèn a llegir els comptes anuals</h2>
+        <p>Els comptes anuals expliquen com està i com li ha anat a una empresa. Aquí els veuràs créixer i canviar, operació a operació, i podràs practicar-los tu mateix.</p>
+      </div>
+      <div class="opcions">
+        <a class="opcio targeta" href="#/balanc">
+          <span class="opcio-icona" aria-hidden="true">⚖️</span>
+          <strong>Balanç de situació</strong>
+          <span>Què té l'empresa, què deu i amb quins recursos propis compta, en un moment concret.</span>
+        </a>
+        <div class="opcio targeta desactivada" aria-disabled="true">
+          <span class="opcio-icona" aria-hidden="true">📈</span>
+          <strong>Compte de pèrdues i guanys</strong>
+          <span>Els ingressos i les despeses de l'exercici, i el resultat que en surt.</span>
+          <span class="properament">Properament</span>
+        </div>
+      </div>
+    </section>
+
+    <section id="balanc" class="apartat" hidden>
+      <article class="targeta intro">
+        <h2>Benvingut/da al balanç de situació</h2>
+        <p>Aquí aprendràs què és el balanç i, sobretot, com canvia cada vegada que l'empresa fa una operació: constituir-se, comprar una nau, demanar un préstec, vendre…</p>
+
+        <h3>Què és el balanç de situació?</h3>
+        <p>És una <strong>fotografia</strong> del patrimoni de l'empresa en una data concreta. Té dues columnes:</p>
+        <div class="esquema">
+          <div class="esquema-costat">
+            <div class="esquema-bloc actiu">
+              <strong>Actiu</strong>
+              <span>El que l'empresa <em>té</em>: béns (una nau, màquines, diners al banc) i drets (el que li deuen els clients).</span>
+            </div>
+          </div>
+          <div class="esquema-costat">
+            <div class="esquema-bloc pn">
+              <strong>Patrimoni net</strong>
+              <span>Els recursos <em>propis</em>: el que han aportat els socis i els beneficis que s'han quedat a l'empresa.</span>
+            </div>
+            <div class="esquema-bloc passiu">
+              <strong>Passiu</strong>
+              <span>El que l'empresa <em>deu</em> a altres: préstecs bancaris, proveïdors, Hisenda…</span>
+            </div>
+          </div>
+        </div>
+        <p>La columna de l'esquerra diu <strong>en què</strong> té invertits els recursos l'empresa; la de la dreta, <strong>d'on</strong> han sortit. Per això sempre han de sumar el mateix:</p>
+        <p class="equacio">Actiu = Patrimoni net + Passiu</p>
+        <p>A més, l'actiu i el passiu es divideixen en <strong>no corrent</strong> (més d'un any: una nau, un préstec a 5 anys) i <strong>corrent</strong> (menys d'un any: diners, clients, proveïdors).</p>
+
+        <h3>Com vols començar?</h3>
+        <div class="modes" role="radiogroup" aria-label="Com vols començar">
+          <label class="mode targeta">
+            <input type="radio" name="manera" value="explora" checked>
+            <strong>Explora</strong>
+            <span>Segueix la història d'una empresa i mira com canvia el balanç a cada pas.</span>
+          </label>
+          <label class="mode targeta">
+            <input type="radio" name="manera" value="practica">
+            <strong>Practica</strong>
+            <span>Construeix tu el balanç després de cada operació, amb correcció o en mode examen.</span>
+          </label>
+        </div>
+        <div class="accions">
+          <button id="comenca" class="boto primari gran">Començar →</button>
+        </div>
+      </article>
+    </section>
+
+    <section id="explora" class="apartat" hidden>
       <div class="navegacio">
         <button id="exp-anterior" class="boto">← Anterior</button>
         <span id="exp-comptador" class="comptador"></span>

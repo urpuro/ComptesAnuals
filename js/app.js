@@ -16,14 +16,33 @@
     return `${signe}${ambPunts}${decimals === '00' ? '' : ',' + decimals} €`;
   }
 
-  $('nom-escenari').textContent = `${escenari.nom} — ${escenari.descripcio}`;
+  // ---------- Navegació (rutes amb #) ----------
+  const RUTES = {
+    '#/': 'inici',
+    '#/balanc': 'balanc',
+    '#/balanc/explora': 'explora',
+    '#/balanc/practica': 'practica',
+  };
 
-  // ---------- Pestanyes ----------
-  document.querySelectorAll('[data-apartat]').forEach((boto) => {
-    boto.addEventListener('click', () => {
-      document.querySelectorAll('[data-apartat]').forEach((b) => b.setAttribute('aria-selected', String(b === boto)));
-      document.querySelectorAll('.apartat').forEach((s) => { s.hidden = s.id !== boto.dataset.apartat; });
+  function navega() {
+    const apartat = RUTES[location.hash] || 'inici';
+    document.querySelectorAll('.apartat').forEach((s) => { s.hidden = s.id !== apartat; });
+    const dinsJoc = apartat === 'explora' || apartat === 'practica';
+    $('pestanyes').hidden = !dinsJoc;
+    document.querySelectorAll('#pestanyes [data-apartat]').forEach((a) => {
+      if (a.dataset.apartat === apartat) a.setAttribute('aria-current', 'page');
+      else a.removeAttribute('aria-current');
     });
+    $('subtitol').textContent = apartat === 'inici'
+      ? 'Joc pedagògic per aprendre els comptes anuals'
+      : dinsJoc ? `Balanç de situació · ${escenari.nom}` : 'Balanç de situació';
+    window.scrollTo(0, 0);
+  }
+  window.addEventListener('hashchange', navega);
+  navega();
+
+  $('comenca').addEventListener('click', () => {
+    location.hash = `#/balanc/${document.querySelector('input[name="manera"]:checked').value}`;
   });
 
   // ---------- Peces compartides ----------
@@ -345,7 +364,7 @@
       final.hidden = true;
       $('prac-inici').hidden = false;
     });
-    $('final-explora').addEventListener('click', () => document.querySelector('[data-apartat="explora"]').click());
+    $('final-explora').addEventListener('click', () => { location.hash = '#/balanc/explora'; });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 })();

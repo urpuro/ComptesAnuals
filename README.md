@@ -18,6 +18,8 @@ L'objectiu és que l'alumne entengui *per què* els comptes són com són, i no 
 
 ## Apartats
 
+La pàgina d'inici permet triar entre el **balanç de situació** i el **compte de pèrdues i guanys** (aquest darrer encara en preparació). L'apartat del balanç comença amb una explicació bàsica de què és el balanç i després deixa triar com començar:
+
 - **Explora**: avança pas a pas per la història d'una empresa i observa com cada operació canvia el balanç de situació i el compte de pèrdues i guanys. Les partides que apareixen, pugen o baixen queden ressaltades, i cada pas inclou una explicació i l'assentament al llibre diari.
 - **Practica**: se't presenta una operació i has de construir el balanç resultant: afegir els conceptes a la massa patrimonial que toca i escriure'n els imports. Hi ha dos modes:
   - *Pràctica*: pots corregir cada pas, demanar una pista o veure la solució, o bé seguir endavant.

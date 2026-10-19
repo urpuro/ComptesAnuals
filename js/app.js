@@ -72,13 +72,6 @@
     }
     if (vista === 'explora') obreExploracio(escenarisDe(apartat, 'exploracio').find((e) => e.id === idEscenari));
     document.querySelectorAll('.apartat').forEach((s) => { s.hidden = s.id !== vista; });
-    const dinsJoc = vista === 'explora' || vista === 'practica';
-    $('pestanyes').hidden = !dinsJoc;
-    document.querySelectorAll('#pestanyes [data-apartat]').forEach((a) => {
-      a.href = `#/${apartat}/${a.dataset.apartat}`;
-      if (a.dataset.apartat === vista) a.setAttribute('aria-current', 'page');
-      else a.removeAttribute('aria-current');
-    });
     renderMolles(vista);
     window.scrollTo(0, 0);
     // En canviar de pantalla, el focus va al títol principal (lectors de pantalla i teclat).

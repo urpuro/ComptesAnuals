@@ -61,11 +61,6 @@ h4 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: 
 .molles a { color: var(--primari); text-decoration: none; }
 .molles a:hover { text-decoration: underline; }
 .molles [aria-current] { color: var(--text); font-weight: 600; }
-.pestanyes { display: flex; gap: 4px; background: var(--vora); padding: 4px; border-radius: 999px; }
-.pestanyes a {
-  color: var(--text); padding: 6px 16px; border-radius: 999px; text-decoration: none;
-}
-.pestanyes a[aria-current="page"] { background: var(--targeta); font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
 
 .targeta {
   background: var(--targeta); border: 1px solid var(--vora); border-radius: var(--radi);
@@ -202,7 +197,6 @@ a.opcio:hover { border-color: var(--primari); transform: translateY(-2px); }
 a.mode { text-decoration: none; transition: border-color .15s, transform .15s; }
 a.mode:hover { transform: translateY(-2px); }
 a.mode:focus-visible { outline: 2px solid var(--primari); outline-offset: 2px; }
-.mode .comenca { color: var(--primari); font-weight: 600; margin-top: auto; padding-top: 6px; }
 
 /* Compte de pèrdues i guanys */
 .data {

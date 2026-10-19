@@ -33,10 +33,6 @@
     window.scrollTo(0, 0);
   }
 
-  $('comenca').addEventListener('click', () => {
-    location.hash = `#/balanc/${document.querySelector('input[name="manera"]:checked').value}`;
-  });
-
   // ---------- Peces compartides ----------
   const textOperacions = (e) => `${e.passos.length} operacions`;
 

@@ -186,12 +186,10 @@ a.opcio:hover { border-color: var(--primari); transform: translateY(-2px); }
   text-align: center; font-size: 1.25rem; font-weight: 700; padding: 10px;
   border: 2px solid var(--vora); border-radius: 8px;
 }
-.mode input { position: absolute; opacity: 0; }
-label.mode { position: relative; }
-label.mode:has(input:checked) { border-color: var(--primari); box-shadow: 0 0 0 1px var(--primari); }
-label.mode:has(input:focus-visible) { outline: 2px solid var(--primari); outline-offset: 2px; }
-.boto.gran { padding: 12px 24px; font-size: 1.05rem; }
-.intro .accions { margin: 16px 0 0; }
+a.mode { text-decoration: none; transition: border-color .15s, transform .15s; }
+a.mode:hover { transform: translateY(-2px); }
+a.mode:focus-visible { outline: 2px solid var(--primari); outline-offset: 2px; }
+.mode .comenca { color: var(--primari); font-weight: 600; margin-top: auto; padding-top: 6px; }
 
 /* Practica */
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }

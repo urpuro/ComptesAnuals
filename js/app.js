@@ -7,6 +7,15 @@
   const $ = (id) => document.getElementById(id);
   const esc = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+  const movimentReduit = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const desplaca = (opcions) => window.scrollTo({ ...opcions, behavior: movimentReduit ? 'auto' : 'smooth' });
+
+  // Escriu un import amb punts de milers i coma decimal, mantenint el signe.
+  function formatNumero(n) {
+    const [enter, decimals] = Math.abs(Math.round(n * 100) / 100).toFixed(2).split('.');
+    return `${n < 0 ? '-' : ''}${enter.replace(/\B(?=(\d{3})+(?!\d))/g, '.')}${decimals === '00' ? '' : ',' + decimals}`;
+  }
+
   function format(n) {
     const signe = n < 0 ? '−' : '';
     const [enter, decimals] = Math.abs(Math.round(n * 100) / 100).toFixed(2).split('.');
@@ -52,6 +61,8 @@
 
   // ---------- Navegació (rutes amb #) ----------
   // #/  ·  #/<apartat>  ·  #/<apartat>/explora[/<escenari>]  ·  #/<apartat>/practica
+  let primeraNavegacio = true;
+
   function navega() {
     const [, ap, mode, idEscenari] = location.hash.split('/');
     let vista = 'inici';
@@ -68,8 +79,42 @@
       if (a.dataset.apartat === vista) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    $('subtitol').textContent = vista === 'inici' ? 'Joc pedagògic per aprendre els comptes anuals' : cfg().nom;
+    renderMolles(vista);
     window.scrollTo(0, 0);
+    // En canviar de pantalla, el focus va al títol principal (lectors de pantalla i teclat).
+    if (!primeraNavegacio) {
+      const seccio = $(vista);
+      const titol = [...seccio.querySelectorAll('h2')].find((h) => h.offsetParent !== null);
+      if (titol) {
+        titol.setAttribute('tabindex', '-1');
+        titol.focus({ preventScroll: true });
+      }
+    }
+    primeraNavegacio = false;
+  }
+
+  // Ruta de navegació («Inici › Balanç de situació › Explora › …») i títol de la pestanya.
+  function renderMolles(vista) {
+    const molles = [];
+    if (vista !== 'inici') {
+      molles.push({ text: 'Inici', href: '#/' });
+      molles.push({ text: cfg().nom, href: `#/${apartat}` });
+      if (vista === 'explora') {
+        molles.push({ text: 'Explora', href: `#/${apartat}/explora` });
+        if (exp && !$('exp-joc').hidden) molles.push({ text: exp.escenari.nom });
+      }
+      if (vista === 'practica') {
+        molles.push({ text: 'Practica', href: `#/${apartat}/practica` });
+        if (prac) molles.push({ text: prac.escenari.nom });
+      }
+      delete molles[molles.length - 1].href;
+    }
+    $('molles').innerHTML = vista === 'inici'
+      ? '<span class="subtitol">Joc pedagògic per aprendre els comptes anuals</span>'
+      : `<ol>${molles.map((m) => `<li>${m.href ? `<a href="${m.href}">${esc(m.text)}</a>` : `<span aria-current="page">${esc(m.text)}</span>`}</li>`).join('')}</ol>`;
+    document.title = vista === 'inici'
+      ? 'Comptes Anuals · Joc pedagògic'
+      : `${molles.slice(1).map((m) => m.text).reverse().join(' · ')} · Comptes Anuals`;
   }
 
   function canviaApartat(ap) {
@@ -191,6 +236,7 @@
     const estat = exp.estats[exp.pas];
     const abans = exp.estats[exp.pas - 1];
     $('exp-comptador').textContent = `Pas ${exp.pas} de ${passos.length}`;
+    $('exp-progres').style.width = `${(exp.pas / passos.length) * 100}%`;
     $('exp-data').textContent = pas.data || '';
     $('exp-data').hidden = !pas.data;
     $('exp-titol').textContent = pas.titol;
@@ -201,6 +247,17 @@
     $('exp-pig').innerHTML = htmlPig(estat.pig, abans.pig);
     $('exp-anterior').disabled = exp.pas === 1;
     $('exp-seguent').disabled = exp.pas === passos.length;
+    const darrer = exp.pas === passos.length;
+    $('exp-final').hidden = !darrer;
+    if (darrer) {
+      const altra = escenarisDe(apartat, 'exploracio').find((e) => e !== exp.escenari);
+      $('exp-final').innerHTML = `
+        <p><strong>Has arribat al final de l'exercici.</strong> El resultat de l'exercici és de ${format(estat.pig.resultat)}${apartat === 'balanc' ? ` i el balanç suma ${format(estat.balanc.totalActiu)}` : ''}.</p>
+        <div class="accions">
+          ${altra ? `<a class="boto" href="#/${apartat}/explora/${altra.id}">Explora «${esc(altra.nom)}» (${esc(altra.nivell.toLowerCase())})</a>` : ''}
+          <a class="boto primari" href="#/${apartat}/practica">Ara practica-ho →</a>
+        </div>`;
+    }
   }
 
   function mouExplora(salt) {
@@ -208,11 +265,16 @@
     if (nou < 1 || nou > exp.escenari.passos.length) return;
     exp.pas = nou;
     renderExplora();
+    // Si l'enunciat ha quedat fora de la vista, s'hi torna perquè es llegeixi el pas nou.
+    const pas = document.querySelector('#exp-joc .pas');
+    const alcadaBarra = document.querySelector('#exp-joc .navegacio').offsetHeight;
+    const top = pas.getBoundingClientRect().top;
+    if (top < alcadaBarra) desplaca({ top: window.scrollY + top - alcadaBarra - 8 });
   }
   $('exp-anterior').addEventListener('click', () => mouExplora(-1));
   $('exp-seguent').addEventListener('click', () => mouExplora(1));
   document.addEventListener('keydown', (e) => {
-    if (!exp || $('exp-joc').hidden || $('explora').hidden || e.target.closest('input, select, textarea')) return;
+    if (!exp || $('exp-joc').hidden || $('explora').hidden || e.target.closest('input, select, textarea, a, button')) return;
     if (e.key === 'ArrowRight') mouExplora(1);
     if (e.key === 'ArrowLeft') mouExplora(-1);
   });
@@ -243,10 +305,9 @@
 
   const copiaFiles = (files) => files.map((f) => ({ ...f, id: seguentId++ }));
   const filesDeMapa = (mapa) => Object.entries(mapa).map(([codi, valor]) => (
-    { id: seguentId++, lloc: motor.llocDe(codi), codi, import: String(valor).replace('.', ',') }));
+    { id: seguentId++, lloc: motor.llocDe(codi), codi, import: formatNumero(valor) }));
 
-  function iniciaPractica(mode) {
-    const id = document.querySelector('input[name="exercici"]:checked').value;
+  function iniciaPractica(mode, id = document.querySelector('input[name="exercici"]:checked').value) {
     const escenari = escenarisDe(apartat, 'practica').find((e) => e.id === id);
     const estats = motor.estats(escenari);
     prac = {
@@ -260,6 +321,8 @@
     $('prac-final').hidden = true;
     $('prac-joc').hidden = false;
     renderPas();
+    renderMolles('practica');
+    window.scrollTo(0, 0);
   }
 
   function renderPas() {
@@ -268,6 +331,7 @@
     const examen = prac.mode === 'examen';
     $('prac-mode').textContent = examen ? "Simulacre d'examen" : 'Pràctica';
     $('prac-comptador').textContent = `Pas ${prac.pas} de ${passos.length}`;
+    $('prac-progres').style.width = `${((prac.pas - 1) / passos.length) * 100}%`;
     $('prac-data').textContent = pas.data || '';
     $('prac-data').hidden = !pas.data;
     $('prac-titol').textContent = pas.titol;
@@ -288,7 +352,7 @@
       return `
         <li class="fila ${estat ? 'estat-' + estat : ''}" data-id="${f.id}">
           <select aria-label="Concepte"><option value="">— Tria un concepte —</option>${opcionsComptes()}</select>
-          <input type="text" inputmode="decimal" aria-label="Import" placeholder="Import" value="${esc(f.import)}">
+          <input type="text" inputmode="decimal" aria-label="Import" placeholder="p. ex. 12.000" value="${esc(f.import)}">
           <button class="treu" title="Treu la fila" aria-label="Treu la fila">×</button>
           ${estat ? `<span class="marca" title="${esc(missatge(estat) || 'Correcte')}">${estat === 'ok' ? '✓' : '✗'}</span>` : ''}
           ${estat && estat !== 'ok' ? `<span class="motiu">${esc(missatge(estat))}</span>` : ''}
@@ -313,7 +377,10 @@
         ? `<div class="subtotal-pig ${p.final ? 'final' : ''}" data-subtotal="${p.subtotal}"><span>${esc(p.nom)}</span><span class="import"></span></div>`
         : htmlSeccio(p.id, p.nom))).join('')}</div>`;
     }
-    $('prac-estat').innerHTML = html;
+    const buit = prac.files.length === 0
+      ? `<p class="buit-ajuda">Encara no hi ha cap concepte. Fes servir «+ Afegeix un concepte» a la ${cfg().lloc} on el vulguis posar.${apartat === 'pig' ? " Si l'operació no afecta el compte de pèrdues i guanys, deixa'l com està i clica «Segueix»." : ''}</p>`
+      : '';
+    $('prac-estat').innerHTML = buit + html;
     for (const f of prac.files) $('prac-estat').querySelector(`[data-id="${f.id}"] select`).value = f.codi;
     renderTotals();
   }
@@ -374,7 +441,12 @@
     if (!filaEl) return;
     const fila = prac.files.find((f) => f.id === Number(filaEl.dataset.id));
     if (e.target.matches('select')) fila.codi = e.target.value;
-    if (e.target.matches('input')) fila.import = e.target.value;
+    if (e.target.matches('input')) {
+      fila.import = e.target.value;
+      // En sortir del camp, es reescriu l'import amb punts de milers perquè es vegi com s'ha entès.
+      const valor = motor.llegeixImport(fila.import);
+      if (e.type === 'change' && !Number.isNaN(valor)) fila.import = e.target.value = formatNumero(valor);
+    }
     filaEl.className = 'fila';
     filaEl.querySelectorAll('.marca, .motiu').forEach((el) => el.remove());
     renderTotals();
@@ -422,7 +494,7 @@
     prac.files = copiaFiles(prac.files);
     prac.pas++;
     renderPas();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    desplaca({ top: 0 });
   });
 
   $('prac-surt').addEventListener('click', () => {
@@ -430,6 +502,12 @@
     prac = null;
     $('prac-joc').hidden = true;
     $('prac-inici').hidden = false;
+    renderMolles('practica');
+  });
+
+  // Avisa abans de tancar o recarregar la pàgina amb una pràctica a mitges.
+  window.addEventListener('beforeunload', (e) => {
+    if (prac && !$('prac-joc').hidden && (prac.pas > 1 || prac.files.length)) e.preventDefault();
   });
 
   document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => iniciaPractica(b.dataset.mode)));
@@ -480,14 +558,22 @@
         <tbody>${files}</tbody>
       </table>
       <div class="accions">
-        <button class="boto primari" id="final-torna">Tria un altre exercici</button>
+        <button class="boto" id="final-torna">Tria un altre exercici</button>
+        <button class="boto primari" id="final-repeteix">Repeteix aquest exercici</button>
       </div>`;
     final.hidden = false;
+    $('prac-progres').style.width = '100%';
     $('final-torna').addEventListener('click', () => {
       final.hidden = true;
+      prac = null;
       $('prac-inici').hidden = false;
+      renderMolles('practica');
+      window.scrollTo(0, 0);
     });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    $('final-repeteix').addEventListener('click', () => iniciaPractica(prac.mode, prac.escenari.id));
+    window.scrollTo(0, 0);
+    final.querySelector('h2').setAttribute('tabindex', '-1');
+    final.querySelector('h2').focus({ preventScroll: true });
   }
 
   renderTries();

@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Comptes Anuals · Joc pedagògic</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/estil.css?v=20261019">
+  <link rel="stylesheet" href="css/estil.css?v=20261019b">
 </head>
 <body>
   <header class="capcalera">
     <div>
       <h1><a href="#/" class="inici-enllac">Comptes Anuals</a></h1>
-      <p class="subtitol" id="subtitol"></p>
+      <nav id="molles" class="molles" aria-label="On ets"></nav>
     </div>
     <nav class="pestanyes" id="pestanyes" hidden>
       <a href="#/balanc/explora" data-apartat="explora">Explora</a>
@@ -140,9 +140,12 @@
         <span id="exp-nom"></span>
         <a id="exp-canvia" href="#/balanc/explora">Canvia d'exploració</a>
       </div>
-      <div class="navegacio">
+      <div class="navegacio enganxada">
         <button id="exp-anterior" class="boto">← Anterior</button>
-        <span id="exp-comptador" class="comptador"></span>
+        <div class="progres-bloc">
+          <span id="exp-comptador" class="comptador"></span>
+          <div class="progres" aria-hidden="true"><span id="exp-progres"></span></div>
+        </div>
         <button id="exp-seguent" class="boto primari">Següent →</button>
       </div>
       <article class="targeta pas">
@@ -154,7 +157,9 @@
           <summary>Veure l'assentament al llibre diari</summary>
           <div id="exp-assentament"></div>
         </details>
+        <div id="exp-final" class="final-exploracio" hidden></div>
       </article>
+      <p class="consell">Consell: també pots avançar i retrocedir amb les fletxes ← → del teclat.</p>
       <div class="estats" id="exp-estats">
         <section class="targeta panell-balanc">
           <h3>Balanç de situació</h3>
@@ -192,7 +197,10 @@
         <div class="escenari-cap"><span id="prac-nom"></span></div>
         <div class="navegacio">
           <span id="prac-mode" class="etiqueta"></span>
-          <span id="prac-comptador" class="comptador"></span>
+          <div class="progres-bloc">
+            <span id="prac-comptador" class="comptador"></span>
+            <div class="progres" aria-hidden="true"><span id="prac-progres"></span></div>
+          </div>
           <button id="prac-surt" class="boto">Surt</button>
         </div>
         <article class="targeta pas">
@@ -207,8 +215,8 @@
           <div id="prac-estat" class="editable"></div>
           <div id="prac-totals" class="totals"></div>
         </section>
-        <div id="prac-missatge" class="missatge" hidden></div>
-        <div class="accions">
+        <div id="prac-missatge" class="missatge" hidden role="status" aria-live="polite"></div>
+        <div class="accions enganxades">
           <button id="prac-pista-boto" class="boto">Pista</button>
           <button id="prac-solucio" class="boto">Mostra la solució</button>
           <button id="prac-corregeix" class="boto">Corregeix</button>
@@ -220,11 +228,11 @@
     </section>
   </main>
 
-  <script src="js/pgc.js?v=20261019"></script>
-  <script src="js/escenaris/exploracions.js?v=20261019"></script>
-  <script src="js/escenaris/practiques.js?v=20261019"></script>
-  <script src="js/escenaris/pig.js?v=20261019"></script>
-  <script src="js/motor.js?v=20261019"></script>
-  <script src="js/app.js?v=20261019"></script>
+  <script src="js/pgc.js?v=20261019b"></script>
+  <script src="js/escenaris/exploracions.js?v=20261019b"></script>
+  <script src="js/escenaris/practiques.js?v=20261019b"></script>
+  <script src="js/escenaris/pig.js?v=20261019b"></script>
+  <script src="js/motor.js?v=20261019b"></script>
+  <script src="js/app.js?v=20261019b"></script>
 </body>
 </html>

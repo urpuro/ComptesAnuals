@@ -4,6 +4,7 @@
   const escenaris = [
     {
       id: 'basica',
+      apartat: 'balanc',
       tipus: 'exploracio',
       nivell: 'Bàsica',
       nom: 'Fusteria Pirineu, SL',
@@ -115,6 +116,7 @@
     },
     {
       id: 'dificil',
+      apartat: 'balanc',
       tipus: 'exploracio',
       nivell: 'Difícil',
       nom: 'Distribuïdora Garbí, SA',

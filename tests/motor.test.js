@@ -3,11 +3,17 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const motor = require('../js/motor.js');
 const { COMPTES } = require('../js/pgc.js');
-const escenaris = [...require('../js/escenaris/exploracions.js'), ...require('../js/escenaris/practiques.js')];
+const escenaris = [
+  ...require('../js/escenaris/exploracions.js'),
+  ...require('../js/escenaris/practiques.js'),
+  ...require('../js/escenaris/pig.js'),
+];
 
-test('hi ha 2 exploracions i 5 pràctiques amb identificadors únics', () => {
-  assert.equal(escenaris.filter((e) => e.tipus === 'exploracio').length, 2);
-  assert.equal(escenaris.filter((e) => e.tipus === 'practica').length, 5);
+test('cada apartat té 2 exploracions i 5 pràctiques, amb identificadors únics', () => {
+  for (const apartat of ['balanc', 'pig']) {
+    assert.equal(escenaris.filter((e) => e.apartat === apartat && e.tipus === 'exploracio').length, 2);
+    assert.equal(escenaris.filter((e) => e.apartat === apartat && e.tipus === 'practica').length, 5);
+  }
   assert.equal(new Set(escenaris.map((e) => e.id)).size, escenaris.length);
 });
 
@@ -53,6 +59,42 @@ test('exploració difícil: el resultat anterior es distribueix i el nou acaba a
   assert.equal(estats.at(-1).mapa['129'], 19575);
 });
 
+test('PiG bàsica: compres, existències i resultat finals', () => {
+  const final = motor.estats(escenaris.find((e) => e.id === 'pig-basica')).at(-1);
+  assert.deepEqual(final.mapaPig['610'], 1000);
+  assert.equal(final.pig.linies.find((l) => l.id === 'aprov').import, -13000);
+  assert.equal(final.pig.resultat, 9525);
+});
+
+test('valorFila: el signe el posa el compte, excepte la variació d’existències', () => {
+  assert.equal(motor.valorFila('600', 500), -500);
+  assert.equal(motor.valorFila('600', -500), -500);
+  assert.equal(motor.valorFila('700', -500), 500);
+  assert.equal(motor.valorFila('609', 500), 500);
+  assert.equal(motor.valorFila('610', -500), -500);
+  assert.equal(motor.valorFila('610', 500), 500);
+  assert.equal(motor.valorFila('281', 500), -500);
+  assert.equal(motor.valorFila('129', -500), -500);
+});
+
+test('avalua una PiG: partida equivocada i import', () => {
+  const esperat = { '600': -9000, '700': 7500 };
+  const files = [
+    { id: 1, lloc: 'aprov', codi: '600', import: '9.000' },
+    { id: 2, lloc: 'altres', codi: '700', import: '7.500' },
+  ];
+  const r = motor.avalua(files, esperat);
+  assert.deepEqual(r.estatFiles, { 1: 'ok', 2: 'lloc' });
+});
+
+test('un concepte mal col·locat arrossegat no torna a comptar com a error', () => {
+  const anteriors = [{ id: 1, lloc: 'altres', codi: '600', import: '9000' }];
+  const ara = [{ id: 2, lloc: 'altres', codi: '600', import: '9000' }, { id: 3, lloc: 'xifra', codi: '700', import: '7500' }];
+  const esperat = motor.esperatRelatiu(anteriors, { '700': 7500 });
+  assert.equal(motor.avalua(ara, esperat, motor.llocsDeFiles(anteriors)).errors, 0);
+  assert.equal(motor.avalua(ara, esperat).errors, 1);
+});
+
 test('llegeixImport accepta formats habituals', () => {
   assert.equal(motor.llegeixImport('60.000'), 60000);
   assert.equal(motor.llegeixImport('-6.000 €'), -6000);
@@ -63,19 +105,19 @@ test('llegeixImport accepta formats habituals', () => {
 test('avalua detecta cada tipus d’error', () => {
   const esperat = { '572': 40000, '211': 60000, '281': -6000 };
   const files = [
-    { id: 1, massa: 'AC', codi: '572', import: '40.000' },
-    { id: 2, massa: 'AC', codi: '211', import: '60.000' },
-    { id: 3, massa: 'ANC', codi: '281', import: '6000' },
-    { id: 4, massa: 'PC', codi: '400', import: '100' },
+    { id: 1, lloc: 'AC', codi: '572', import: '40.000' },
+    { id: 2, lloc: 'AC', codi: '211', import: '60.000' },
+    { id: 3, lloc: 'ANC', codi: '281', import: '6000' },
+    { id: 4, lloc: 'PC', codi: '400', import: '100' },
   ];
   const r = motor.avalua(files, esperat);
-  assert.deepEqual(r.estatFiles, { 1: 'ok', 2: 'massa', 3: 'ok', 4: 'sobra' });
+  assert.deepEqual(r.estatFiles, { 1: 'ok', 2: 'lloc', 3: 'ok', 4: 'sobra' });
   assert.deepEqual(r.falten, []);
   assert.equal(r.errors, 2);
 });
 
 test('esperatRelatiu aplica l’operació sobre el balanç de l’alumne', () => {
-  const anteriors = [{ id: 1, massa: 'AC', codi: '572', import: '90.000' }, { id: 2, massa: 'PN', codi: '100', import: '100.000' }];
+  const anteriors = [{ id: 1, lloc: 'AC', codi: '572', import: '90.000' }, { id: 2, lloc: 'PN', codi: '100', import: '100.000' }];
   const mapa = motor.esperatRelatiu(anteriors, { '572': -60000, '211': 60000 });
   assert.deepEqual(mapa, { '572': 30000, '100': 100000, '211': 60000 });
 });

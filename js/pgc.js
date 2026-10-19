@@ -30,6 +30,7 @@
 
   // massa: on va el compte al balanç. pig: partida del compte de pèrdues i guanys.
   // correctora: compte que resta dins la seva massa (es presenta en negatiu).
+  // natura: només per als comptes de PiG que no segueixen la regla del grup.
   const COMPTES = {
     // Grup 1. Finançament bàsic
     '100': { nom: 'Capital social', massa: 'PN' },
@@ -75,14 +76,18 @@
     '572': { nom: 'Bancs i institucions de crèdit', massa: 'AC' },
     // Grup 6. Compres i despeses
     '600': { nom: 'Compres de mercaderies', pig: 'aprov' },
+    '609': { nom: 'Ràpels per compres', pig: 'aprov', natura: 'ingres' },
     '607': { nom: 'Treballs realitzats per altres empreses', pig: 'aprov' },
-    '610': { nom: "Variació d'existències de mercaderies", pig: 'aprov' },
+    '610': { nom: "Variació d'existències de mercaderies", pig: 'aprov', natura: 'variable' },
     '621': { nom: 'Arrendaments i cànons', pig: 'altres' },
     '622': { nom: 'Reparacions i conservació', pig: 'altres' },
     '623': { nom: 'Serveis de professionals independents', pig: 'altres' },
+    '624': { nom: 'Transports', pig: 'altres' },
     '625': { nom: "Primes d'assegurances", pig: 'altres' },
     '627': { nom: 'Publicitat, propaganda i relacions públiques', pig: 'altres' },
+    '626': { nom: 'Serveis bancaris i similars', pig: 'altres' },
     '628': { nom: 'Subministraments', pig: 'altres' },
+    '631': { nom: 'Altres tributs', pig: 'altres' },
     '630': { nom: 'Impost sobre beneficis', pig: 'impost' },
     '640': { nom: 'Sous i salaris', pig: 'personal' },
     '642': { nom: "Seguretat Social a càrrec de l'empresa", pig: 'personal' },
@@ -106,12 +111,24 @@
     '3': 'Grup 3. Existències',
     '4': 'Grup 4. Creditors i deutors per operacions comercials',
     '5': 'Grup 5. Comptes financers',
+    '6': 'Grup 6. Compres i despeses',
+    '7': 'Grup 7. Vendes i ingressos',
   };
+
+  // Naturalesa d'un compte de pèrdues i guanys: els del grup 7 són ingressos,
+  // els del grup 6 despeses, tret dels que ho indiquen explícitament.
+  // «variable» vol dir que pot sumar o restar (variació d'existències).
+  function natura(codi) {
+    const compte = COMPTES[codi];
+    if (!compte || !compte.pig) return null;
+    if (compte.natura) return compte.natura;
+    return codi[0] === '7' ? 'ingres' : 'despesa';
+  }
 
   // Compte on el balanç recull el resultat acumulat del compte de pèrdues i guanys.
   const COMPTE_RESULTAT = '129';
 
-  const pgc = { MASSES, PARTIDES_PIG, COMPTES, GRUPS, COMPTE_RESULTAT };
+  const pgc = { MASSES, PARTIDES_PIG, COMPTES, GRUPS, COMPTE_RESULTAT, natura };
   if (typeof module !== 'undefined' && module.exports) module.exports = pgc;
   else (root.CA = root.CA || {}).pgc = pgc;
 })(this);

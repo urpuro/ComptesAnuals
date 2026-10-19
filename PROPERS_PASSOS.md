@@ -22,7 +22,8 @@ Llista orientativa d'idees per fer créixer l'aplicatiu. No és un compromís ni
 ## 3. Interactivitat i joc
 - [ ] Mode "endevina": abans de mostrar el pas següent, l'alumne prediu quines partides canviaran i en quin sentit.
 - [x] Mode "construeix" (apartat Practica): l'alumne omple el balanç de cada pas, amb correcció opcional o en simulacre d'examen.
-- [ ] El mateix exercici per al compte de pèrdues i guanys.
+- [x] El mateix model (explicació, exploracions i pràctiques) per al compte de pèrdues i guanys.
+- [ ] Gràfic de l'evolució del resultat al llarg de l'exercici a l'apartat de pèrdues i guanys.
 - [x] Escollir quin escenari practicar (5 pràctiques) i quina exploració seguir (bàsica i difícil).
 - [ ] Barrejar l'ordre dels passos quan sigui possible, o generar imports aleatoris.
 - [ ] Revisar a la pantalla final el balanç de l'alumne al costat del correcte, pas a pas.

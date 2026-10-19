@@ -4,6 +4,7 @@
   const escenaris = [
     {
       id: 'bicicletes',
+      apartat: 'balanc',
       tipus: 'practica',
       nivell: 'Fàcil',
       nom: 'Bicicletes Roda, SL',
@@ -85,6 +86,7 @@
     },
     {
       id: 'assessoria',
+      apartat: 'balanc',
       tipus: 'practica',
       nivell: 'Fàcil',
       nom: 'Assessoria Delta, SL',
@@ -178,6 +180,7 @@
     },
     {
       id: 'transports',
+      apartat: 'balanc',
       tipus: 'practica',
       nivell: 'Mitjà',
       nom: 'Transports Serra, SL',
@@ -277,6 +280,7 @@
     },
     {
       id: 'restaurant',
+      apartat: 'balanc',
       tipus: 'practica',
       nivell: 'Mitjà',
       nom: 'Restaurant Mar Blava, SL',
@@ -370,6 +374,7 @@
     },
     {
       id: 'electrodomestics',
+      apartat: 'balanc',
       tipus: 'practica',
       nivell: 'Difícil',
       nom: 'Electrodomèstics Llevant, SL',

@@ -2,7 +2,7 @@
 // el compte de pèrdues i guanys, i avalua els balanços que construeix l'alumne.
 (function (root) {
   const pgc = typeof module !== 'undefined' && module.exports ? require('./pgc.js') : root.CA.pgc;
-  const { MASSES, PARTIDES_PIG, COMPTES, COMPTE_RESULTAT } = pgc;
+  const { MASSES, PARTIDES_PIG, COMPTES, COMPTE_RESULTAT, natura } = pgc;
 
   const TOLERANCIA = 0.005;
   const igual = (a, b) => Math.abs(a - b) < TOLERANCIA;
@@ -96,6 +96,23 @@
     return { linies, resultat: valors.resultat };
   }
 
+  // Contribució de cada compte al resultat ({codi: import}): ingressos en
+  // positiu i despeses en negatiu.
+  function mapaPig(s) {
+    const mapa = {};
+    for (const [codi, saldo] of Object.entries(s)) {
+      if (COMPTES[codi].pig && !igual(saldo, 0)) mapa[codi] = -saldo;
+    }
+    return mapa;
+  }
+
+  // Compte de pèrdues i guanys a partir d'un mapa {codi: import}.
+  function pigDeMapa(mapa) {
+    const s = {};
+    for (const [codi, valor] of Object.entries(mapa)) s[codi] = -valor;
+    return pig(s);
+  }
+
   // Estats de l'empresa: l'índex 0 és abans de cap operació i l'índex i és
   // just després del pas i.
   function estats(escenari) {
@@ -103,9 +120,14 @@
     for (let i = 0; i <= escenari.passos.length; i++) {
       const s = saldos(escenari.passos.slice(0, i).map((p) => p.assentament));
       const mapa = mapaBalanc(s);
-      resultat.push({ saldos: s, mapa, balanc: balancDeMapa(mapa), pig: pig(s) });
+      resultat.push({ saldos: s, mapa, balanc: balancDeMapa(mapa), mapaPig: mapaPig(s), pig: pig(s) });
     }
     return resultat;
+  }
+
+  // On va cada compte: la massa del balanç o la partida de pèrdues i guanys.
+  function llocDe(codi) {
+    return COMPTES[codi].massa || COMPTES[codi].pig;
   }
 
   // Variació del mapa de balanç que provoca un pas.
@@ -126,10 +148,17 @@
     return Number(net);
   }
 
-  // Valor amb signe d'una fila de l'alumne. Per als comptes correctors s'accepta
-  // l'import escrit tant en positiu com en negatiu.
+  // Valor amb signe d'una fila de l'alumne. Quan el signe el determina el
+  // compte (correctors, despeses i ingressos) s'accepta l'import escrit tant
+  // en positiu com en negatiu.
   function valorFila(codi, valor) {
-    return COMPTES[codi] && COMPTES[codi].correctora ? -Math.abs(valor) : valor;
+    const compte = COMPTES[codi];
+    if (!compte) return valor;
+    if (compte.correctora) return -Math.abs(valor);
+    const n = natura(codi);
+    if (n === 'despesa') return -Math.abs(valor);
+    if (n === 'ingres') return Math.abs(valor);
+    return valor;
   }
 
   // Mapa {codi: import} del balanç d'un alumne (ignora files incompletes).
@@ -144,9 +173,11 @@
     return mapa;
   }
 
-  // Compara les files de l'alumne amb el balanç esperat ({codi: import}).
+  // Compara les files de l'alumne amb l'estat esperat ({codi: import}).
   // Retorna l'estat de cada fila, els comptes que falten i el nombre d'errors.
-  function avalua(files, esperat) {
+  // llocsAcceptats ({codi: lloc}) permet acceptar un compte que ja era en un
+  // altre lloc al pas anterior, perquè un error arrossegat no compti dues vegades.
+  function avalua(files, esperat, llocsAcceptats = {}) {
     const vistos = new Set();
     const estatFiles = {};
     let errors = 0;
@@ -157,7 +188,7 @@
       if (!f.codi || Number.isNaN(valor)) estat = 'incomplet';
       else if (vistos.has(f.codi)) estat = 'duplicat';
       else if (!(f.codi in esperat)) estat = igual(valor, 0) ? 'ok' : 'sobra';
-      else if (COMPTES[f.codi].massa !== f.massa) estat = 'massa';
+      else if (llocDe(f.codi) !== f.lloc && llocsAcceptats[f.codi] !== f.lloc) estat = 'lloc';
       else if (!igual(valorFila(f.codi, valor), esperat[f.codi])) estat = 'import';
       else estat = 'ok';
       if (f.codi) vistos.add(f.codi);
@@ -169,8 +200,15 @@
     return { estatFiles, falten, errors };
   }
 
-  // Balanç que hauria de tenir l'alumne si apliqués bé l'operació sobre el seu
-  // propi balanç anterior (encara que aquest tingués errors).
+  // On tenia l'alumne cada compte al pas anterior ({codi: lloc}).
+  function llocsDeFiles(files) {
+    const llocs = {};
+    for (const f of files) if (f.codi) llocs[f.codi] = f.lloc;
+    return llocs;
+  }
+
+  // Estat que hauria de tenir l'alumne si apliqués bé l'operació sobre el seu
+  // propi estat anterior (encara que aquest tingués errors).
   function esperatRelatiu(filesAnteriors, delta) {
     const mapa = mapaDeFiles(filesAnteriors);
     for (const [codi, d] of Object.entries(delta)) mapa[codi] = (mapa[codi] || 0) + d;
@@ -179,8 +217,8 @@
   }
 
   const motor = {
-    saldos, assentamentQuadra, mapaBalanc, balancDeMapa, pig, estats, variacio,
-    llegeixImport, mapaDeFiles, avalua, esperatRelatiu,
+    saldos, assentamentQuadra, mapaBalanc, balancDeMapa, mapaPig, pig, pigDeMapa, estats, variacio,
+    llocDe, llegeixImport, valorFila, mapaDeFiles, avalua, llocsDeFiles, esperatRelatiu,
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = motor;
   else (root.CA = root.CA || {}).motor = motor;

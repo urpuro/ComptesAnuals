@@ -30,12 +30,11 @@
           <strong>Balanç de situació</strong>
           <span>Què té l'empresa, què deu i amb quins recursos propis compta, en un moment concret.</span>
         </a>
-        <div class="opcio targeta desactivada" aria-disabled="true">
+        <a class="opcio targeta" href="#/pig">
           <span class="opcio-icona" aria-hidden="true">📈</span>
           <strong>Compte de pèrdues i guanys</strong>
           <span>Els ingressos i les despeses de l'exercici, i el resultat que en surt.</span>
-          <span class="properament">Properament</span>
-        </div>
+        </a>
       </div>
     </section>
 
@@ -84,11 +83,53 @@
       </article>
     </section>
 
+    <section id="pig" class="apartat" hidden>
+      <article class="targeta intro">
+        <h2>Benvingut/da al compte de pèrdues i guanys</h2>
+        <p>Aquí aprendràs què és el compte de pèrdues i guanys i, sobretot, com es va construint al llarg d'un any, operació a operació, fins arribar al resultat de l'exercici.</p>
+
+        <h3>Què és el compte de pèrdues i guanys?</h3>
+        <p>Si el balanç és una <strong>fotografia</strong> d'un moment concret, el compte de pèrdues i guanys és una <strong>pel·lícula</strong>: explica què ha passat durant tot l'exercici (normalment, un any). Recull dos tipus d'elements:</p>
+        <div class="esquema">
+          <div class="esquema-costat">
+            <div class="esquema-bloc actiu">
+              <strong>Ingressos</strong>
+              <span>El que l'empresa <em>guanya</em> amb la seva activitat: vendes, serveis prestats, lloguers que cobra, interessos…</span>
+            </div>
+          </div>
+          <div class="esquema-costat">
+            <div class="esquema-bloc passiu">
+              <strong>Despeses</strong>
+              <span>El que li <em>costa</em> fer-la: compres de mercaderies, sous, lloguers, subministraments, amortitzacions, interessos, impostos…</span>
+            </div>
+          </div>
+        </div>
+        <p class="equacio">Resultat = Ingressos − Despeses</p>
+        <p>Si el resultat és positiu, l'empresa ha tingut <strong>beneficis</strong>; si és negatiu, <strong>pèrdues</strong>. Aquest resultat passa al <strong>patrimoni net</strong> del balanç.</p>
+        <p>El compte s'ordena per esglaons: primer el <strong>resultat d'explotació</strong> (l'activitat normal de l'empresa), després el <strong>resultat financer</strong> (interessos), i finalment es resta l'<strong>impost sobre beneficis</strong>.</p>
+        <p>Compte: no tot el que entra o surt del banc és ingrés o despesa. Una aportació dels socis, un préstec, la compra d'una màquina o el pagament d'un deute no són al compte de pèrdues i guanys. I una venda és ingrés quan es fa, encara que es cobri més tard.</p>
+
+        <h3>Com vols començar?</h3>
+        <div class="modes">
+          <a class="mode targeta" href="#/pig/explora">
+            <strong>Explora</strong>
+            <span>Segueix un any d'una empresa i mira com es van acumulant els ingressos i les despeses.</span>
+            <span class="comenca">Començar →</span>
+          </a>
+          <a class="mode targeta" href="#/pig/practica">
+            <strong>Practica</strong>
+            <span>Construeix tu el compte de pèrdues i guanys després de cada operació, amb correcció o en mode examen.</span>
+            <span class="comenca">Començar →</span>
+          </a>
+        </div>
+      </article>
+    </section>
+
     <section id="explora" class="apartat" hidden>
       <div id="exp-tria">
         <div class="benvinguda">
           <h2>Tria una exploració</h2>
-          <p>Segueix la història d'una empresa i mira com cada operació canvia el balanç i el compte de pèrdues i guanys.</p>
+          <p id="exp-tria-text"></p>
         </div>
         <div id="exp-opcions" class="opcions"></div>
       </div>
@@ -96,7 +137,7 @@
       <div id="exp-joc" hidden>
       <div class="escenari-cap">
         <span id="exp-nom"></span>
-        <a href="#/balanc/explora">Canvia d'exploració</a>
+        <a id="exp-canvia" href="#/balanc/explora">Canvia d'exploració</a>
       </div>
       <div class="navegacio">
         <button id="exp-anterior" class="boto">← Anterior</button>
@@ -104,6 +145,7 @@
         <button id="exp-seguent" class="boto primari">Següent →</button>
       </div>
       <article class="targeta pas">
+        <span id="exp-data" class="data" hidden></span>
         <h2 id="exp-titol"></h2>
         <p id="exp-enunciat" class="enunciat"></p>
         <p id="exp-explicacio" class="explicacio"></p>
@@ -112,12 +154,12 @@
           <div id="exp-assentament"></div>
         </details>
       </article>
-      <div class="estats">
-        <section class="targeta">
+      <div class="estats" id="exp-estats">
+        <section class="targeta panell-balanc">
           <h3>Balanç de situació</h3>
           <div id="exp-balanc"></div>
         </section>
-        <section class="targeta">
+        <section class="targeta panell-pig">
           <h3>Compte de pèrdues i guanys</h3>
           <div id="exp-pig"></div>
         </section>
@@ -127,9 +169,9 @@
 
     <section id="practica" class="apartat" hidden>
       <div id="prac-inici" class="targeta">
-        <h2>Construeix el balanç</h2>
-        <p>A cada pas se t'explica una operació de l'empresa. Has d'escriure com queda el balanç de situació després de l'operació: tria els conceptes, posa'ls a la massa que toca i escriu-ne l'import.</p>
-        <p>El balanç de cada pas comença amb el que tenies al pas anterior. Si continues amb errors, els aniràs arrossegant.</p>
+        <h2 id="prac-inici-titol"></h2>
+        <p id="prac-inici-text"></p>
+        <p>Cada pas comença amb el que tenies al pas anterior. Si continues amb errors, els aniràs arrossegant.</p>
         <h3>1. Tria l'exercici</h3>
         <div id="prac-opcions" class="opcions-escenari" role="radiogroup" aria-label="Exercici"></div>
         <h3>2. Tria el mode per començar</h3>
@@ -153,13 +195,15 @@
           <button id="prac-surt" class="boto">Surt</button>
         </div>
         <article class="targeta pas">
+          <span id="prac-data" class="data" hidden></span>
           <h2 id="prac-titol"></h2>
           <p id="prac-enunciat" class="enunciat"></p>
           <div id="prac-pista" hidden></div>
         </article>
         <section class="targeta">
-          <h3>Balanç de situació després de l'operació</h3>
-          <div id="prac-balanc" class="editable"></div>
+          <h3 id="prac-estat-titol"></h3>
+          <p id="prac-ajuda" class="explicacio ajuda"></p>
+          <div id="prac-estat" class="editable"></div>
           <div id="prac-totals" class="totals"></div>
         </section>
         <div id="prac-missatge" class="missatge" hidden></div>
@@ -178,6 +222,7 @@
   <script src="js/pgc.js"></script>
   <script src="js/escenaris/exploracions.js"></script>
   <script src="js/escenaris/practiques.js"></script>
+  <script src="js/escenaris/pig.js"></script>
   <script src="js/motor.js"></script>
   <script src="js/app.js"></script>
 </body>

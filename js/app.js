@@ -1,9 +1,8 @@
-// Interfície del joc: apartat «Explora» i apartat «Practica».
+// Interfície del joc. Hi ha dos apartats (balanç de situació i compte de
+// pèrdues i guanys) i cadascun té dues maneres de jugar: «Explora» i «Practica».
 (function () {
-  const { MASSES, COMPTES } = CA.pgc;
+  const { MASSES, COMPTES, GRUPS, PARTIDES_PIG } = CA.pgc;
   const motor = CA.motor;
-  const exploracions = CA.escenaris.filter((e) => e.tipus === 'exploracio');
-  const practiques = CA.escenaris.filter((e) => e.tipus === 'practica');
 
   const $ = (id) => document.getElementById(id);
   const esc = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -15,27 +14,75 @@
     return `${signe}${ambPunts}${decimals === '00' ? '' : ',' + decimals} €`;
   }
 
+  // ---------- Apartats ----------
+  const APARTATS = {
+    balanc: {
+      nom: 'Balanç de situació',
+      estat: 'el balanç',
+      lloc: 'massa',
+      triaExplora: "Segueix la història d'una empresa i mira com cada operació canvia el balanç de situació.",
+      practicaTitol: 'Construeix el balanç',
+      practicaText: "A cada pas se t'explica una operació de l'empresa. Has d'escriure com queda el balanç de situació després de l'operació: tria els conceptes, posa'ls a la massa que toca i escriu-ne l'import.",
+      ajuda: "Pots escriure les amortitzacions acumulades i els deterioraments en positiu: el programa ja sap que resten.",
+      grups: ['1', '2', '3', '4', '5'],
+      mapa: (estat) => estat.mapa,
+    },
+    pig: {
+      nom: 'Compte de pèrdues i guanys',
+      estat: 'el compte de pèrdues i guanys',
+      lloc: 'partida',
+      triaExplora: "Segueix un exercici sencer d'una empresa i mira com es van acumulant els ingressos i les despeses fins arribar al resultat.",
+      practicaTitol: 'Construeix el compte de pèrdues i guanys',
+      practicaText: "A cada pas se t'explica una operació de l'empresa. Has d'escriure com queda el compte de pèrdues i guanys acumulat de l'exercici: tria els conceptes, posa'ls a la partida que toca i escriu-ne l'import. Compte: algunes operacions no l'afecten!",
+      ajuda: "Pots escriure els imports en positiu: el programa ja sap si són ingressos o despeses. Només la variació d'existències (610) porta signe: positiva si l'estoc augmenta i negativa si disminueix.",
+      grups: ['6', '7'],
+      mapa: (estat) => estat.mapaPig,
+    },
+  };
+  let apartat = 'balanc';
+  const cfg = () => APARTATS[apartat];
+  const escenarisDe = (ap, tipus) => CA.escenaris.filter((e) => e.apartat === ap && e.tipus === tipus);
+  const etiquetaNivell = (e) => `<span class="nivell nivell-${esc(e.nivell.toLowerCase())}">${esc(e.nivell)}</span>`;
+  const textOperacions = (e) => `${e.passos.length} operacions`;
+
+  function nomLloc(id) {
+    const lloc = MASSES.find((m) => m.id === id) || PARTIDES_PIG.find((p) => p.id === id);
+    return lloc ? lloc.nom : id;
+  }
+
   // ---------- Navegació (rutes amb #) ----------
-  // #/  ·  #/balanc  ·  #/balanc/explora[/<escenari>]  ·  #/balanc/practica
+  // #/  ·  #/<apartat>  ·  #/<apartat>/explora[/<escenari>]  ·  #/<apartat>/practica
   function navega() {
-    const [, seccio, apartatRuta, idEscenari] = location.hash.split('/');
-    let apartat = 'inici';
-    if (seccio === 'balanc') apartat = ['explora', 'practica'].includes(apartatRuta) ? apartatRuta : 'balanc';
-    if (apartat === 'explora') obreExploracio(exploracions.find((e) => e.id === idEscenari));
-    document.querySelectorAll('.apartat').forEach((s) => { s.hidden = s.id !== apartat; });
-    const dinsJoc = apartat === 'explora' || apartat === 'practica';
+    const [, ap, mode, idEscenari] = location.hash.split('/');
+    let vista = 'inici';
+    if (APARTATS[ap]) {
+      if (ap !== apartat) canviaApartat(ap);
+      vista = ['explora', 'practica'].includes(mode) ? mode : ap;
+    }
+    if (vista === 'explora') obreExploracio(escenarisDe(apartat, 'exploracio').find((e) => e.id === idEscenari));
+    document.querySelectorAll('.apartat').forEach((s) => { s.hidden = s.id !== vista; });
+    const dinsJoc = vista === 'explora' || vista === 'practica';
     $('pestanyes').hidden = !dinsJoc;
     document.querySelectorAll('#pestanyes [data-apartat]').forEach((a) => {
-      if (a.dataset.apartat === apartat) a.setAttribute('aria-current', 'page');
+      a.href = `#/${apartat}/${a.dataset.apartat}`;
+      if (a.dataset.apartat === vista) a.setAttribute('aria-current', 'page');
       else a.removeAttribute('aria-current');
     });
-    $('subtitol').textContent = apartat === 'inici' ? 'Joc pedagògic per aprendre els comptes anuals' : 'Balanç de situació';
+    $('subtitol').textContent = vista === 'inici' ? 'Joc pedagògic per aprendre els comptes anuals' : cfg().nom;
     window.scrollTo(0, 0);
   }
 
-  // ---------- Peces compartides ----------
-  const textOperacions = (e) => `${e.passos.length} operacions`;
+  function canviaApartat(ap) {
+    apartat = ap;
+    exp = null;
+    prac = null;
+    $('prac-joc').hidden = true;
+    $('prac-final').hidden = true;
+    $('prac-inici').hidden = false;
+    renderTries();
+  }
 
+  // ---------- Peces compartides ----------
   function htmlAssentament(assentament) {
     const files = assentament.map(([codi, deure, haver]) => `
       <tr class="${haver ? 'haver' : ''}">
@@ -53,23 +100,38 @@
     return `<span class="canvi ${d > 0 ? 'puja' : 'baixa'}">${d > 0 ? '▲ +' : '▼ '}${format(d)}</span>`;
   }
 
+  function renderTries() {
+    $('exp-tria-text').textContent = cfg().triaExplora;
+    $('exp-opcions').innerHTML = escenarisDe(apartat, 'exploracio').map((e) => `
+      <a class="opcio targeta" href="#/${apartat}/explora/${e.id}">
+        ${etiquetaNivell(e)}
+        <strong>${esc(e.nom)}</strong>
+        <span>${esc(e.descripcio)}</span>
+        <span class="peu-opcio">${textOperacions(e)}</span>
+      </a>`).join('');
+    $('exp-canvia').href = `#/${apartat}/explora`;
+    $('prac-inici-titol').textContent = cfg().practicaTitol;
+    $('prac-inici-text').textContent = cfg().practicaText;
+    $('prac-opcions').innerHTML = escenarisDe(apartat, 'practica').map((e, i) => `
+      <label class="opcio-escenari targeta">
+        <input type="radio" name="exercici" value="${e.id}" ${i === 0 ? 'checked' : ''}>
+        ${etiquetaNivell(e)}
+        <strong>${i + 1}. ${esc(e.nom)}</strong>
+        <span>${esc(e.descripcio)}</span>
+        <span class="peu-opcio">${textOperacions(e)}</span>
+      </label>`).join('');
+  }
+
   // ---------- Explora ----------
   let exp = null;
-
-  $('exp-opcions').innerHTML = exploracions.map((e) => `
-    <a class="opcio targeta" href="#/balanc/explora/${e.id}">
-      <span class="nivell nivell-${esc(e.nivell.toLowerCase())}">${esc(e.nivell)}</span>
-      <strong>${esc(e.nom)}</strong>
-      <span>${esc(e.descripcio)}</span>
-      <span class="peu-opcio">${textOperacions(e)}</span>
-    </a>`).join('');
 
   function obreExploracio(escenari) {
     $('exp-tria').hidden = !!escenari;
     $('exp-joc').hidden = !escenari;
     if (!escenari) return;
     if (!exp || exp.escenari !== escenari) exp = { escenari, estats: motor.estats(escenari), pas: 1 };
-    $('exp-nom').innerHTML = `<span class="nivell nivell-${esc(escenari.nivell.toLowerCase())}">${esc(escenari.nivell)}</span> <strong>${esc(escenari.nom)}</strong>`;
+    $('exp-nom').innerHTML = `${etiquetaNivell(escenari)} <strong>${esc(escenari.nom)}</strong>`;
+    $('exp-estats').classList.toggle('pig-primer', apartat === 'pig');
     renderExplora();
   }
 
@@ -107,10 +169,12 @@
 
   function htmlPig(pig, pigAbans) {
     const abans = Object.fromEntries(pigAbans.linies.map((l) => [l.id, l.import]));
+    const comptesAbans = {};
+    for (const l of pigAbans.linies) for (const c of l.comptes || []) comptesAbans[c.codi] = c.import;
     const files = pig.linies.map((l) => {
       const canvi = Math.abs(abans[l.id] - l.import) > 0.005;
       const detall = (l.comptes || []).map((c) => `
-        <li class="detall"><span class="concepte"><span class="codi">${esc(c.codi)}</span> ${esc(c.nom)}</span><span class="import">${format(c.import)}</span></li>`).join('');
+        <li class="detall ${comptesAbans[c.codi] === c.import ? '' : 'canviada'}"><span class="concepte"><span class="codi">${esc(c.codi)}</span> ${esc(c.nom)}</span><span class="import">${format(c.import)}</span></li>`).join('');
       return `
         <li class="${l.subtotal ? 'subtotal' : ''} ${l.final ? 'final' : ''} ${canvi ? 'canviada' : ''}">
           <span class="concepte">${esc(l.nom)}</span>
@@ -127,6 +191,8 @@
     const estat = exp.estats[exp.pas];
     const abans = exp.estats[exp.pas - 1];
     $('exp-comptador').textContent = `Pas ${exp.pas} de ${passos.length}`;
+    $('exp-data').textContent = pas.data || '';
+    $('exp-data').hidden = !pas.data;
     $('exp-titol').textContent = pas.titol;
     $('exp-enunciat').textContent = pas.enunciat;
     $('exp-explicacio').textContent = pas.explicacio;
@@ -146,51 +212,50 @@
   $('exp-anterior').addEventListener('click', () => mouExplora(-1));
   $('exp-seguent').addEventListener('click', () => mouExplora(1));
   document.addEventListener('keydown', (e) => {
-    if ($('exp-joc').hidden || $('explora').hidden || e.target.closest('input, select, textarea')) return;
+    if (!exp || $('exp-joc').hidden || $('explora').hidden || e.target.closest('input, select, textarea')) return;
     if (e.key === 'ArrowRight') mouExplora(1);
     if (e.key === 'ArrowLeft') mouExplora(-1);
   });
 
   // ---------- Practica ----------
-  const MISSATGES = {
-    massa: 'Aquest concepte no va en aquesta massa.',
-    import: "L'import no és correcte.",
-    sobra: 'Aquest concepte no hauria de sortir al balanç.',
-    duplicat: 'Aquest concepte ja hi és en una altra fila.',
-    incomplet: 'Tria un concepte i escriu un import vàlid.',
-  };
-  const opcionsComptes = Object.entries(CA.pgc.GRUPS).map(([grup, nomGrup]) => {
-    const opcions = Object.entries(COMPTES)
-      .filter(([codi, c]) => c.massa && codi[0] === grup)
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([codi, c]) => `<option value="${codi}">${codi} · ${esc(c.nom)}</option>`).join('');
-    return `<optgroup label="${esc(nomGrup)}">${opcions}</optgroup>`;
-  }).join('');
+  function missatge(estat) {
+    return {
+      lloc: `Aquest concepte no va en aquesta ${cfg().lloc}.`,
+      import: "L'import no és correcte.",
+      sobra: `Aquest concepte no hauria de sortir ${apartat === 'pig' ? 'al compte de pèrdues i guanys' : 'al balanç'}.`,
+      duplicat: 'Aquest concepte ja hi és en una altra fila.',
+      incomplet: 'Tria un concepte i escriu un import vàlid.',
+    }[estat];
+  }
 
-  $('prac-opcions').innerHTML = practiques.map((e, i) => `
-    <label class="opcio-escenari targeta">
-      <input type="radio" name="exercici" value="${e.id}" ${i === 0 ? 'checked' : ''}>
-      <span class="nivell nivell-${esc(e.nivell.toLowerCase())}">${esc(e.nivell)}</span>
-      <strong>${i + 1}. ${esc(e.nom)}</strong>
-      <span>${esc(e.descripcio)}</span>
-      <span class="peu-opcio">${textOperacions(e)}</span>
-    </label>`).join('');
+  function opcionsComptes() {
+    return cfg().grups.map((grup) => {
+      const opcions = Object.entries(COMPTES)
+        .filter(([codi]) => codi[0] === grup)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([codi, c]) => `<option value="${codi}">${codi} · ${esc(c.nom)}</option>`).join('');
+      return `<optgroup label="${esc(GRUPS[grup])}">${opcions}</optgroup>`;
+    }).join('');
+  }
 
   let prac = null;
   let seguentId = 1;
 
   const copiaFiles = (files) => files.map((f) => ({ ...f, id: seguentId++ }));
   const filesDeMapa = (mapa) => Object.entries(mapa).map(([codi, valor]) => (
-    { id: seguentId++, massa: COMPTES[codi].massa, codi, import: String(valor).replace('.', ',') }));
+    { id: seguentId++, lloc: motor.llocDe(codi), codi, import: String(valor).replace('.', ',') }));
 
   function iniciaPractica(mode) {
     const id = document.querySelector('input[name="exercici"]:checked').value;
-    const escenari = practiques.find((e) => e.id === id);
+    const escenari = escenarisDe(apartat, 'practica').find((e) => e.id === id);
+    const estats = motor.estats(escenari);
     prac = {
-      escenari, passos: escenari.passos, estats: motor.estats(escenari),
+      escenari, passos: escenari.passos, mapes: estats.map(cfg().mapa),
       mode, pas: 1, files: [], filesAnteriors: [], historial: [], correccio: null, ajudes: 0,
     };
-    $('prac-nom').innerHTML = `<span class="nivell nivell-${esc(escenari.nivell.toLowerCase())}">${esc(escenari.nivell)}</span> <strong>${esc(escenari.nom)}</strong>`;
+    $('prac-nom').innerHTML = `${etiquetaNivell(escenari)} <strong>${esc(escenari.nom)}</strong>`;
+    $('prac-estat-titol').textContent = `${cfg().nom} després de l'operació`;
+    $('prac-ajuda').textContent = cfg().ajuda;
     $('prac-inici').hidden = true;
     $('prac-final').hidden = true;
     $('prac-joc').hidden = false;
@@ -203,6 +268,8 @@
     const examen = prac.mode === 'examen';
     $('prac-mode').textContent = examen ? "Simulacre d'examen" : 'Pràctica';
     $('prac-comptador').textContent = `Pas ${prac.pas} de ${passos.length}`;
+    $('prac-data').textContent = pas.data || '';
+    $('prac-data').hidden = !pas.data;
     $('prac-titol').textContent = pas.titol;
     $('prac-enunciat').textContent = pas.enunciat;
     $('prac-pista').hidden = true;
@@ -211,52 +278,74 @@
     ['prac-pista-boto', 'prac-solucio', 'prac-corregeix'].forEach((id) => { $(id).hidden = examen; });
     $('prac-segueix').textContent = prac.pas === passos.length ? 'Acaba' : 'Segueix →';
     prac.correccio = null;
-    renderBalancEditable();
+    renderEditable();
   }
 
-  function renderBalancEditable() {
+  function htmlSeccio(id, nom) {
     const estatFiles = prac.correccio ? prac.correccio.estatFiles : {};
-    const columna = (costat, titol) => `<div class="columna"><h4>${titol}</h4>${MASSES.filter((m) => m.costat === costat).map((m) => `
-      <div class="massa" data-massa="${m.id}">
-        <div class="massa-cap"><span>${esc(m.nom)}</span><span class="subtotal-massa"></span></div>
-        <ul>${prac.files.filter((f) => f.massa === m.id).map((f) => {
-          const estat = estatFiles[f.id];
-          return `
-          <li class="fila ${estat ? 'estat-' + estat : ''}" data-id="${f.id}">
-            <select aria-label="Concepte"><option value="">— Tria un concepte —</option>${opcionsComptes}</select>
-            <input type="text" inputmode="decimal" aria-label="Import" placeholder="Import" value="${esc(f.import)}">
-            <button class="treu" title="Treu la fila" aria-label="Treu la fila">×</button>
-            ${estat ? `<span class="marca" title="${esc(MISSATGES[estat] || 'Correcte')}">${estat === 'ok' ? '✓' : '✗'}</span>` : ''}
-            ${estat && estat !== 'ok' ? `<span class="motiu">${esc(MISSATGES[estat])}</span>` : ''}
-          </li>`;
-        }).join('')}</ul>
+    const files = prac.files.filter((f) => f.lloc === id).map((f) => {
+      const estat = estatFiles[f.id];
+      return `
+        <li class="fila ${estat ? 'estat-' + estat : ''}" data-id="${f.id}">
+          <select aria-label="Concepte"><option value="">— Tria un concepte —</option>${opcionsComptes()}</select>
+          <input type="text" inputmode="decimal" aria-label="Import" placeholder="Import" value="${esc(f.import)}">
+          <button class="treu" title="Treu la fila" aria-label="Treu la fila">×</button>
+          ${estat ? `<span class="marca" title="${esc(missatge(estat) || 'Correcte')}">${estat === 'ok' ? '✓' : '✗'}</span>` : ''}
+          ${estat && estat !== 'ok' ? `<span class="motiu">${esc(missatge(estat))}</span>` : ''}
+        </li>`;
+    }).join('');
+    return `
+      <div class="massa" data-lloc="${id}">
+        <div class="massa-cap"><span>${esc(nom)}</span><span class="subtotal-lloc"></span></div>
+        <ul>${files}</ul>
         <button class="afegeix">+ Afegeix un concepte</button>
-      </div>`).join('')}<div class="total"><span>Total</span><span class="total-${costat}"></span></div></div>`;
-    $('prac-balanc').innerHTML = `<div class="balanc">${columna('actiu', 'Actiu')}${columna('passiu', 'Patrimoni net i passiu')}</div>`;
-    for (const f of prac.files) {
-      $('prac-balanc').querySelector(`[data-id="${f.id}"] select`).value = f.codi;
+      </div>`;
+  }
+
+  function renderEditable() {
+    let html;
+    if (apartat === 'balanc') {
+      const columna = (costat, titol) => `<div class="columna"><h4>${titol}</h4>${MASSES.filter((m) => m.costat === costat)
+        .map((m) => htmlSeccio(m.id, m.nom)).join('')}<div class="total"><span>Total</span><span class="total-${costat}"></span></div></div>`;
+      html = `<div class="balanc">${columna('actiu', 'Actiu')}${columna('passiu', 'Patrimoni net i passiu')}</div>`;
+    } else {
+      html = `<div class="pig-editable">${PARTIDES_PIG.map((p) => (p.subtotal
+        ? `<div class="subtotal-pig ${p.final ? 'final' : ''}" data-subtotal="${p.subtotal}"><span>${esc(p.nom)}</span><span class="import"></span></div>`
+        : htmlSeccio(p.id, p.nom))).join('')}</div>`;
     }
+    $('prac-estat').innerHTML = html;
+    for (const f of prac.files) $('prac-estat').querySelector(`[data-id="${f.id}"] select`).value = f.codi;
     renderTotals();
   }
 
   function renderTotals() {
     const totals = {};
-    for (const m of MASSES) totals[m.id] = 0;
     for (const f of prac.files) {
       const valor = motor.llegeixImport(f.import);
-      if (!Number.isNaN(valor)) totals[f.massa] += f.codi && COMPTES[f.codi].correctora ? -Math.abs(valor) : valor;
+      if (!Number.isNaN(valor)) totals[f.lloc] = (totals[f.lloc] || 0) + motor.valorFila(f.codi, valor);
     }
-    $('prac-balanc').querySelectorAll('.massa').forEach((el) => {
-      el.querySelector('.subtotal-massa').textContent = format(totals[el.dataset.massa]);
+    $('prac-estat').querySelectorAll('[data-lloc]').forEach((el) => {
+      el.querySelector('.subtotal-lloc').textContent = format(totals[el.dataset.lloc] || 0);
     });
-    const actiu = totals.ANC + totals.AC;
-    const passiu = totals.PN + totals.PNC + totals.PC;
-    $('prac-balanc').querySelector('.total-actiu').textContent = format(actiu);
-    $('prac-balanc').querySelector('.total-passiu').textContent = format(passiu);
-    const quadra = Math.abs(actiu - passiu) < 0.005;
-    $('prac-totals').innerHTML = quadra
-      ? '<p class="quadra si">✓ El teu balanç quadra (que quadri no vol dir que sigui correcte!)</p>'
-      : `<p class="quadra no">✗ El teu balanç no quadra: diferència de ${format(actiu - passiu)}</p>`;
+    const t = (id) => totals[id] || 0;
+    if (apartat === 'balanc') {
+      const actiu = t('ANC') + t('AC');
+      const passiu = t('PN') + t('PNC') + t('PC');
+      $('prac-estat').querySelector('.total-actiu').textContent = format(actiu);
+      $('prac-estat').querySelector('.total-passiu').textContent = format(passiu);
+      const quadra = Math.abs(actiu - passiu) < 0.005;
+      $('prac-totals').innerHTML = quadra
+        ? '<p class="quadra si">✓ El teu balanç quadra (que quadri no vol dir que sigui correcte!)</p>'
+        : `<p class="quadra no">✗ El teu balanç no quadra: diferència de ${format(actiu - passiu)}</p>`;
+    } else {
+      for (const p of PARTIDES_PIG) {
+        if (!p.subtotal) continue;
+        totals[p.subtotal] = p.inclou.reduce((suma, id) => suma + t(id), 0);
+        $('prac-estat').querySelector(`[data-subtotal="${p.subtotal}"] .import`).textContent = format(totals[p.subtotal]);
+      }
+      const resultat = totals.resultat;
+      $('prac-totals').innerHTML = `<p class="quadra ${resultat >= 0 ? 'si' : 'no'}">Segons el teu compte, l'empresa ${resultat >= 0 ? 'guanya' : 'perd'} ${format(Math.abs(resultat))} fins ara.</p>`;
+    }
   }
 
   function mostraMissatge(html, tipus) {
@@ -266,17 +355,17 @@
     el.hidden = false;
   }
 
-  $('prac-balanc').addEventListener('click', (e) => {
-    const massa = e.target.closest('.massa');
+  $('prac-estat').addEventListener('click', (e) => {
+    const seccio = e.target.closest('[data-lloc]');
     if (e.target.matches('.afegeix')) {
-      prac.files.push({ id: seguentId++, massa: massa.dataset.massa, codi: '', import: '' });
-      renderBalancEditable();
-      const novaFila = $('prac-balanc').querySelector(`[data-massa="${massa.dataset.massa}"] .fila:last-child select`);
-      if (novaFila) novaFila.focus();
+      prac.files.push({ id: seguentId++, lloc: seccio.dataset.lloc, codi: '', import: '' });
+      renderEditable();
+      const nova = $('prac-estat').querySelector(`[data-lloc="${seccio.dataset.lloc}"] .fila:last-child select`);
+      if (nova) nova.focus();
     } else if (e.target.matches('.treu')) {
       const id = Number(e.target.closest('.fila').dataset.id);
       prac.files = prac.files.filter((f) => f.id !== id);
-      renderBalancEditable();
+      renderEditable();
     }
   });
 
@@ -290,8 +379,8 @@
     filaEl.querySelectorAll('.marca, .motiu').forEach((el) => el.remove());
     renderTotals();
   }
-  $('prac-balanc').addEventListener('input', filaEditada);
-  $('prac-balanc').addEventListener('change', filaEditada);
+  $('prac-estat').addEventListener('input', filaEditada);
+  $('prac-estat').addEventListener('change', filaEditada);
 
   $('prac-pista-boto').addEventListener('click', () => {
     $('prac-pista').hidden = false;
@@ -299,31 +388,31 @@
   });
 
   $('prac-corregeix').addEventListener('click', () => {
-    prac.correccio = motor.avalua(prac.files, prac.estats[prac.pas].mapa);
-    renderBalancEditable();
+    prac.correccio = motor.avalua(prac.files, prac.mapes[prac.pas]);
+    renderEditable();
     const { errors, falten } = prac.correccio;
     if (errors === 0) {
-      mostraMissatge('<strong>Perfecte!</strong> El balanç és correcte. Pots seguir al pas següent.', 'bo');
+      mostraMissatge(`<strong>Perfecte!</strong> ${apartat === 'pig' ? 'El compte de pèrdues i guanys' : 'El balanç'} és correcte. Pots seguir al pas següent.`, 'bo');
     } else {
-      const textFalten = falten.length ? ` Falten ${falten.length} concepte${falten.length > 1 ? 's' : ''} al balanç.` : '';
+      const textFalten = falten.length ? ` Falten ${falten.length} concepte${falten.length > 1 ? 's' : ''}.` : '';
       mostraMissatge(`<strong>Hi ha ${errors} error${errors > 1 ? 's' : ''}.</strong>${textFalten} Pots corregir-${errors > 1 ? 'los' : 'lo'} o seguir igualment.`, 'dolent');
     }
   });
 
   $('prac-solucio').addEventListener('click', () => {
-    prac.files = filesDeMapa(prac.estats[prac.pas].mapa);
+    prac.files = filesDeMapa(prac.mapes[prac.pas]);
     prac.correccio = null;
     prac.ajudes++;
-    renderBalancEditable();
+    renderEditable();
     mostraMissatge(`<strong>Aquesta és la solució.</strong> ${esc(prac.passos[prac.pas - 1].explicacio)}`, 'info');
   });
 
   $('prac-segueix').addEventListener('click', () => {
     const i = prac.pas;
-    const { estats, passos } = prac;
-    const delta = motor.variacio(estats[i - 1].mapa, estats[i].mapa);
-    const relatiu = motor.avalua(prac.files, motor.esperatRelatiu(prac.filesAnteriors, delta));
-    const absolut = motor.avalua(prac.files, estats[i].mapa);
+    const { mapes, passos } = prac;
+    const delta = motor.variacio(mapes[i - 1], mapes[i]);
+    const relatiu = motor.avalua(prac.files, motor.esperatRelatiu(prac.filesAnteriors, delta), motor.llocsDeFiles(prac.filesAnteriors));
+    const absolut = motor.avalua(prac.files, mapes[i]);
     prac.historial.push({ pas: i, files: prac.files.map((f) => ({ ...f })), relatiu, absolut });
     if (i === passos.length) {
       renderFinal();
@@ -351,26 +440,26 @@
       const estat = avaluacio.estatFiles[f.id];
       if (!estat || estat === 'ok') continue;
       const nom = f.codi ? `${f.codi} ${COMPTES[f.codi].nom}` : '(sense concepte)';
-      let detall = MISSATGES[estat];
-      if (estat === 'import') detall = `Has posat ${format(motor.llegeixImport(f.import))} i hauria de ser ${format(esperat[f.codi])}.`;
-      if (estat === 'massa') detall = `L'has posat a ${MASSES.find((m) => m.id === f.massa).nom}, però va a ${MASSES.find((m) => m.id === COMPTES[f.codi].massa).nom}.`;
+      let detall = missatge(estat);
+      if (estat === 'import') detall = `Has posat ${format(motor.valorFila(f.codi, motor.llegeixImport(f.import)))} i hauria de ser ${format(esperat[f.codi])}.`;
+      if (estat === 'lloc') detall = `L'has posat a «${nomLloc(f.lloc)}», però va a «${nomLloc(motor.llocDe(f.codi))}».`;
       items.push(`<li><strong>${esc(nom)}</strong>: ${esc(detall)}</li>`);
     }
     for (const codi of avaluacio.falten) {
-      items.push(`<li><strong>${esc(codi)} ${esc(COMPTES[codi].nom)}</strong>: falta al balanç (${format(esperat[codi])}).</li>`);
+      items.push(`<li><strong>${esc(codi)} ${esc(COMPTES[codi].nom)}</strong>: falta (${format(esperat[codi])}).</li>`);
     }
     return items.join('');
   }
 
   function renderFinal() {
     $('prac-joc').hidden = true;
-    const { estats, passos } = prac;
+    const { mapes, passos } = prac;
     const final = $('prac-final');
     const encerts = prac.historial.filter((h) => h.relatiu.errors === 0).length;
     const nota = Math.round((encerts / passos.length) * 100) / 10;
     let anteriors = [];
     const files = prac.historial.map((h) => {
-      const delta = motor.variacio(estats[h.pas - 1].mapa, estats[h.pas].mapa);
+      const delta = motor.variacio(mapes[h.pas - 1], mapes[h.pas]);
       const esperat = motor.esperatRelatiu(anteriors, delta);
       anteriors = h.files;
       const detall = h.relatiu.errors ? `<details><summary>Veure errors</summary><ul>${descripcioErrors(h.files, h.relatiu, esperat)}</ul></details>` : '';
@@ -380,13 +469,14 @@
         <td class="${h.absolut.errors ? 'no' : 'si'}">${h.absolut.errors ? '✗' : '✓'}</td>
       </tr>`;
     }).join('');
+    const nomEstat = apartat === 'pig' ? 'PiG' : 'Balanç';
     final.innerHTML = `
       <h2>Resultat ${prac.mode === 'examen' ? "del simulacre d'examen" : 'de la pràctica'}: ${esc(prac.escenari.nom)}</h2>
       <p class="nota">${String(nota).replace('.', ',')} <small>/ 10</small></p>
       <p>Has registrat bé <strong>${encerts}</strong> de ${passos.length} operacions${prac.ajudes ? ` (has fet servir ${prac.ajudes} ajud${prac.ajudes > 1 ? 'es' : 'a'})` : ''}.</p>
-      <p class="explicacio">Una operació compta com a ben registrada si l'has aplicat bé sobre el teu propi balanç anterior, encara que aquest arrossegués errors. La darrera columna indica si el balanç coincidia exactament amb el correcte.</p>
+      <p class="explicacio">Una operació compta com a ben registrada si l'has aplicada bé sobre el teu propi estat anterior, encara que aquest arrossegués errors. La darrera columna indica si ${cfg().estat} coincidia exactament amb el correcte.</p>
       <table class="resultats">
-        <thead><tr><th>Pas</th><th>Operació</th><th>Balanç</th></tr></thead>
+        <thead><tr><th>Pas</th><th>Operació</th><th>${nomEstat}</th></tr></thead>
         <tbody>${files}</tbody>
       </table>
       <div class="accions">
@@ -400,6 +490,7 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  renderTries();
   window.addEventListener('hashchange', navega);
   navega();
 })();

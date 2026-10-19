@@ -91,6 +91,7 @@ details summary { cursor: pointer; color: var(--primari); margin-top: .5em; }
   display: flex; justify-content: space-between; font-weight: 600; font-size: .92rem;
   border-bottom: 1px solid var(--vora); padding-bottom: 2px; margin-bottom: 4px;
 }
+.massa-cap span:last-child, .subtotal-pig .import { white-space: nowrap; padding-left: 8px; }
 .massa ul, .pig { list-style: none; margin: 0; padding: 0; }
 .massa li, .pig li {
   display: grid; grid-template-columns: 1fr auto; column-gap: 8px; align-items: baseline;
@@ -141,12 +142,6 @@ a.opcio:hover { border-color: var(--primari); transform: translateY(-2px); }
 .opcio strong { font-size: 1.2rem; color: var(--primari); }
 .opcio span { color: var(--suau); }
 .opcio-icona { font-size: 2rem; }
-.opcio.desactivada { opacity: .6; cursor: not-allowed; }
-.opcio.desactivada strong { color: var(--text); }
-.properament {
-  position: absolute; top: 16px; right: 16px; font-size: .75rem; font-weight: 600;
-  background: var(--nou-fons); color: var(--nou) !important; padding: 2px 10px; border-radius: 999px;
-}
 
 /* Tria d'escenari */
 .nivell {
@@ -190,6 +185,22 @@ a.mode { text-decoration: none; transition: border-color .15s, transform .15s; }
 a.mode:hover { transform: translateY(-2px); }
 a.mode:focus-visible { outline: 2px solid var(--primari); outline-offset: 2px; }
 .mode .comenca { color: var(--primari); font-weight: 600; margin-top: auto; padding-top: 6px; }
+
+/* Compte de pèrdues i guanys */
+.data {
+  display: inline-block; font-size: .8rem; font-weight: 600; color: var(--primari);
+  border: 1px solid var(--primari); border-radius: 999px; padding: 0 10px; margin-bottom: 6px;
+}
+.estats.pig-primer { grid-template-columns: 1fr 1fr; }
+.estats.pig-primer .panell-pig { order: -1; }
+.pig .detall.canviada { background: var(--destaca); }
+.pig-editable { max-width: 720px; }
+.subtotal-pig {
+  display: flex; justify-content: space-between; font-weight: 700; padding: 6px 0;
+  border-top: 1px solid var(--vora); margin-bottom: 12px; font-variant-numeric: tabular-nums;
+}
+.subtotal-pig.final { border-top: 2px solid var(--text); font-size: 1.05rem; }
+.ajuda { font-size: .88rem; }
 
 /* Practica */
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }

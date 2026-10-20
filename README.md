@@ -18,7 +18,7 @@ L'objectiu és que l'alumne entengui *per què* els comptes són com són, i no 
 
 ## Apartats
 
-La pàgina d'inici permet triar entre el **balanç de situació** i el **compte de pèrdues i guanys**. Tots dos apartats segueixen el mateix model: una explicació bàsica i, després, triar com començar:
+La pàgina d'inici permet triar entre el **balanç de situació**, el **compte de pèrdues i guanys** i les **ràtios**. Els dos primers apartats segueixen el mateix model: una explicació bàsica i, després, triar com començar:
 
 - **Explora** (dues exploracions per apartat: *bàsica* i *difícil*): avança pas a pas per la història d'una empresa i observa com cada operació canvia el balanç de situació i el compte de pèrdues i guanys. A l'apartat de pèrdues i guanys, cada operació porta el mes en què passa, per veure com s'acumula el resultat al llarg de l'exercici. Les partides que apareixen, pugen o baixen queden ressaltades, i cada pas inclou una explicació i l'assentament al llibre diari.
 - **Practica** (cinc exercicis per apartat, de dificultat creixent, amb empreses i imports diferents dels de l'apartat Explora): se't presenta una operació i has de construir el balanç (o el compte de pèrdues i guanys) resultant: afegir els conceptes a la massa o partida que toca i escriure'n els imports. Hi ha dos modes:
@@ -26,6 +26,8 @@ La pàgina d'inici permet triar entre el **balanç de situació** i el **compte 
   - *Simulacre d'examen*: sense correcció ni pistes fins al final.
 
   Si continues amb errors, els vas arrossegant als passos següents. Al final es puntua cada operació respecte al teu propi balanç anterior, de manera que un error inicial no penalitza tota la resta.
+
+L'apartat de **ràtios** recull les ràtios financeres i els indicadors de rendibilitat de les orientacions de la PAU (annexos 3 i 4): fons de maniobra, disponibilitat, tresoreria, liquiditat, solvència, endeutament, estructura del deute i rendibilitat econòmica, financera i de les vendes. Té una explicació amb les fórmules i els valors de referència, una exploració on es veu com canvien les ràtios amb cada operació (el mateix panell apareix, plegat, a les exploracions del balanç i del compte de pèrdues i guanys) i una pràctica amb cinc empreses on cal calcular-les i interpretar-les.
 
 ## Principis
 
@@ -42,6 +44,7 @@ Estructura:
 
 - `js/pgc.js`: catàleg de comptes del PGC, masses del balanç i partides de pèrdues i guanys.
 - `js/escenaris/exploracions.js` i `js/escenaris/practiques.js`: escenaris del balanç; `js/escenaris/pig.js`: escenaris del compte de pèrdues i guanys. Cada pas és un assentament de partida doble.
+- `js/ratios.js`: definició i càlcul de les ràtios; `js/escenaris/ratios.js`: comptes anuals de les cinc empreses de la pràctica de ràtios.
 - `js/motor.js`: càlcul del balanç i de la PiG i correcció dels balanços de l'alumne.
 - `js/app.js`: interfície.
 - `tests/`: proves del motor (`node --test`).

@@ -3,6 +3,7 @@
 (function () {
   const { MASSES, COMPTES, GRUPS, PARTIDES_PIG } = CA.pgc;
   const motor = CA.motor;
+  const R = CA.ratios;
 
   const $ = (id) => document.getElementById(id);
   const esc = (text) => String(text).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -47,10 +48,16 @@
       grups: ['6', '7'],
       mapa: (estat) => estat.mapaPig,
     },
+    ratios: {
+      nom: 'Ràtios',
+      triaExplora: "Tria qualsevol de les exploracions del balanç o del compte de pèrdues i guanys i mira com canvien les ràtios amb cada operació.",
+    },
   };
   let apartat = 'balanc';
   const cfg = () => APARTATS[apartat];
-  const escenarisDe = (ap, tipus) => CA.escenaris.filter((e) => e.apartat === ap && e.tipus === tipus);
+  // A l'apartat de ràtios s'hi poden explorar totes les exploracions dels altres apartats.
+  const escenarisDe = (ap, tipus) => CA.escenaris.filter((e) => e.tipus === tipus
+    && (e.apartat === ap || (ap === 'ratios' && tipus === 'exploracio')));
   const etiquetaNivell = (e) => `<span class="nivell nivell-${esc(e.nivell.toLowerCase())}">${esc(e.nivell)}</span>`;
   const textOperacions = (e) => `${e.passos.length} operacions`;
 
@@ -69,6 +76,7 @@
     if (APARTATS[ap]) {
       if (ap !== apartat) canviaApartat(ap);
       vista = ['explora', 'practica'].includes(mode) ? mode : ap;
+      if (ap === 'ratios' && vista === 'practica') vista = 'rpractica';
     }
     if (vista === 'explora') obreExploracio(escenarisDe(apartat, 'exploracio').find((e) => e.id === idEscenari));
     document.querySelectorAll('.apartat').forEach((s) => { s.hidden = s.id !== vista; });
@@ -96,9 +104,10 @@
         molles.push({ text: 'Explora', href: `#/${apartat}/explora` });
         if (exp && !$('exp-joc').hidden) molles.push({ text: exp.escenari.nom });
       }
-      if (vista === 'practica') {
+      if (vista === 'practica' || vista === 'rpractica') {
         molles.push({ text: 'Practica', href: `#/${apartat}/practica` });
-        if (prac) molles.push({ text: prac.escenari.nom });
+        const actiu = vista === 'practica' ? prac : rp;
+        if (actiu) molles.push({ text: actiu.escenari.nom });
       }
       delete molles[molles.length - 1].href;
     }
@@ -114,9 +123,13 @@
     apartat = ap;
     exp = null;
     prac = null;
+    rp = null;
     $('prac-joc').hidden = true;
     $('prac-final').hidden = true;
     $('prac-inici').hidden = false;
+    $('rp-joc').hidden = true;
+    $('rp-final').hidden = true;
+    $('rp-inici').hidden = false;
     renderTries();
   }
 
@@ -145,9 +158,10 @@
         ${etiquetaNivell(e)}
         <strong>${esc(e.nom)}</strong>
         <span>${esc(e.descripcio)}</span>
-        <span class="peu-opcio">${textOperacions(e)}</span>
+        <span class="peu-opcio">${apartat === 'ratios' ? `${esc(APARTATS[e.apartat].nom)} · ` : ''}${textOperacions(e)}</span>
       </a>`).join('');
     $('exp-canvia').href = `#/${apartat}/explora`;
+    if (apartat === 'ratios') return;
     $('prac-inici-titol').textContent = cfg().practicaTitol;
     $('prac-inici-text').textContent = cfg().practicaText;
     $('prac-opcions').innerHTML = escenarisDe(apartat, 'practica').map((e, i) => `
@@ -170,6 +184,15 @@
     if (!exp || exp.escenari !== escenari) exp = { escenari, estats: motor.estats(escenari), pas: 1 };
     $('exp-nom').innerHTML = `${etiquetaNivell(escenari)} <strong>${esc(escenari.nom)}</strong>`;
     $('exp-estats').classList.toggle('pig-primer', apartat === 'pig');
+    // A l'apartat de ràtios, el panell de ràtios va obert i en primer lloc.
+    const panell = $('exp-panell-ratios');
+    if (apartat === 'ratios') {
+      panell.open = true;
+      $('exp-estats').before(panell);
+    } else {
+      panell.open = false;
+      $('exp-estats').after(panell);
+    }
     renderExplora();
   }
 
@@ -223,6 +246,61 @@
     return `<ul class="pig">${files}</ul>`;
   }
 
+  // ---------- Ràtios ----------
+  const TEXT_SITUACIO = { baix: 'Per sota', ok: 'Dins', alt: 'Per sobre' };
+  const OPCIONS_SITUACIO = {
+    baix: 'Per sota del valor de referència',
+    ok: 'Dins del valor de referència',
+    alt: 'Per sobre del valor de referència',
+  };
+  const opcionsInterpretacio = (ratio) => (ratio.id === 'fm'
+    ? [['ok', 'Positiu'], ['baix', 'Negatiu']]
+    : Object.keys(ratio.interpretacions).map((k) => [k, OPCIONS_SITUACIO[k]]));
+
+  function formatRatio(ratio, v) {
+    if (v === null) return '—';
+    if (ratio.tipus === 'euros') return format(v);
+    const text = formatNumero(Math.round(v * 100) / 100).replace(/,(\d)$/, ',$10');
+    const ambDecimals = text.includes(',') ? text : `${text},00`;
+    return ratio.tipus === 'percent' ? `${ambDecimals} %` : ambDecimals;
+  }
+
+  function textCalcul(fila) {
+    const [[n1, v1], [n2, v2]] = fila.termes;
+    const signe = fila.ratio.tipus === 'euros' ? '−' : '/';
+    const resultat = fila.valor === null ? 'no es pot calcular (el denominador és 0)' : formatRatio(fila.ratio, fila.valor);
+    return `${n1} ${format(v1)} ${signe} ${n2} ${format(v2)}${fila.ratio.tipus === 'percent' ? ' × 100' : ''} = ${resultat}`;
+  }
+
+  function textSituacio(fila) {
+    if (!fila.situacio) return '';
+    const curt = fila.ratio.id === 'fm' ? (fila.situacio === 'ok' ? 'Positiu' : 'Negatiu') : TEXT_SITUACIO[fila.situacio];
+    return `<span class="situacio situacio-${fila.situacio}">${esc(curt)}</span>`;
+  }
+
+  function htmlRatios(llista, abans) {
+    const grup = (id, titol) => `
+      <h4>${titol}</h4>
+      <div class="ratios-graella">${llista.filter((f) => f.ratio.grup === id).map((f) => {
+        const ant = abans.find((a) => a.ratio.id === f.ratio.id).valor;
+        const canvi = f.valor !== null && ant !== null && Math.abs(f.valor - ant) > (f.ratio.tipus === 'euros' ? 0.5 : 0.005);
+        return `
+        <div class="ratio ${canvi ? 'canviada' : ''}">
+          <div class="ratio-cap"><strong>${esc(f.ratio.nom)}</strong>${textSituacio(f)}</div>
+          <div class="ratio-valor">${formatRatio(f.ratio, f.valor)}${canvi ? `<span class="canvi ${f.valor > ant ? 'puja' : 'baixa'}">${f.valor > ant ? '▲' : '▼'}</span>` : ''}</div>
+          <div class="ratio-formula">${esc(f.ratio.expressio)}</div>
+          <div class="ratio-calcul">${esc(textCalcul(f))}</div>
+          <div class="ratio-ref" title="${esc(f.ratio.referencia)}">Referència: ${esc(f.ratio.referenciaCurta)}</div>
+        </div>`;
+      }).join('')}</div>`;
+    return grup('financera', 'Ràtios financeres') + grup('rendibilitat', 'Rendibilitat');
+  }
+
+  $('ratios-taula').innerHTML = `<div class="taula-desplacable"><table class="resultats taula-ratios">
+    <thead><tr><th>Ràtio</th><th>Expressió</th><th>Valor de referència</th></tr></thead>
+    <tbody>${R.RATIOS.map((r) => `<tr><td><strong>${esc(r.nom)}</strong></td><td>${esc(r.expressio)}</td><td>${esc(r.referencia)}</td></tr>`).join('')}</tbody>
+  </table></div>`;
+
   function renderExplora() {
     const { passos } = exp.escenari;
     const pas = passos[exp.pas - 1];
@@ -238,6 +316,7 @@
     $('exp-assentament').innerHTML = htmlAssentament(pas.assentament);
     $('exp-balanc').innerHTML = htmlBalanc(estat.balanc, abans.mapa);
     $('exp-pig').innerHTML = htmlPig(estat.pig, abans.pig);
+    $('exp-ratios').innerHTML = htmlRatios(R.calcula(estat), R.calcula(abans));
     $('exp-anterior').disabled = exp.pas === 1;
     $('exp-seguent').disabled = exp.pas === passos.length;
     const darrer = exp.pas === passos.length;
@@ -501,6 +580,7 @@
   // Avisa abans de tancar o recarregar la pàgina amb una pràctica a mitges.
   window.addEventListener('beforeunload', (e) => {
     if (prac && !$('prac-joc').hidden && (prac.pas > 1 || prac.files.length)) e.preventDefault();
+    if (rp && !$('rp-joc').hidden && Object.keys(rp.respostes).length) e.preventDefault();
   });
 
   document.querySelectorAll('[data-mode]').forEach((b) => b.addEventListener('click', () => iniciaPractica(b.dataset.mode)));
@@ -568,6 +648,162 @@
     final.querySelector('h2').setAttribute('tabindex', '-1');
     final.querySelector('h2').focus({ preventScroll: true });
   }
+
+  // ---------- Practica de ràtios ----------
+  let rp = null;
+  const casosRatios = escenarisDe('ratios', 'practica');
+
+  $('rp-opcions').innerHTML = casosRatios.map((e, i) => `
+    <label class="opcio-escenari targeta">
+      <input type="radio" name="cas-ratios" value="${e.id}" ${i === 0 ? 'checked' : ''}>
+      ${etiquetaNivell(e)}
+      <strong>${i + 1}. ${esc(e.nom)}</strong>
+      <span>${esc(e.descripcio)}</span>
+    </label>`).join('');
+
+  function iniciaRatios(mode, id = document.querySelector('input[name="cas-ratios"]:checked').value) {
+    const escenari = casosRatios.find((e) => e.id === id);
+    const estats = motor.estats(escenari);
+    const estat = estats.at(-1);
+    rp = { escenari, mode, solucio: R.calcula(estat), respostes: {}, ajudes: 0 };
+    $('rp-nom').innerHTML = `${etiquetaNivell(escenari)} <strong>${esc(escenari.nom)}</strong>`;
+    $('rp-mode').textContent = mode === 'examen' ? "Simulacre d'examen" : 'Pràctica';
+    $('rp-enunciat').textContent = escenari.passos[0].enunciat;
+    $('rp-balanc').innerHTML = htmlBalanc(estat.balanc, estat.mapa);
+    $('rp-pig').innerHTML = htmlPig(estat.pig, estat.pig);
+    ['rp-solucio', 'rp-corregeix'].forEach((b) => { $(b).hidden = mode === 'examen'; });
+    $('rp-missatge').hidden = true;
+    renderTaulaRatios();
+    $('rp-inici').hidden = true;
+    $('rp-final').hidden = true;
+    $('rp-joc').hidden = false;
+    renderMolles('rpractica');
+    window.scrollTo(0, 0);
+  }
+
+  function renderTaulaRatios(correccio = null, ambSolucio = false) {
+    $('rp-taula').innerHTML = rp.solucio.map((f) => {
+      const resp = rp.respostes[f.ratio.id] || {};
+      const c = correccio && correccio[f.ratio.id];
+      const marca = (ok) => (c ? `<span class="marca ${ok ? 'si' : 'no'}">${ok ? '✓' : '✗'}</span>` : '');
+      const interp = f.ratio.rang ? `
+        <select data-camp="interp" aria-label="Interpretació de ${esc(f.ratio.nom)}">
+          <option value="">— Interpretació —</option>
+          ${opcionsInterpretacio(f.ratio).map(([k, t]) => `<option value="${k}" ${resp.interp === k ? 'selected' : ''}>${esc(t)}</option>`).join('')}
+        </select>${marca(c && c.interp)}` : '<span class="sense-interp">Sense valor de referència</span>';
+      const unitat = { euros: '€', ratio: '', percent: '%' }[f.ratio.tipus];
+      return `
+        <div class="rp-fila ${c ? (c.valor && (c.interp !== false) ? 'estat-ok' : 'estat-error') : ''}" data-id="${f.ratio.id}">
+          <div class="rp-nom"><strong>${esc(f.ratio.nom)}</strong><span>${esc(f.ratio.expressio)}</span></div>
+          <div class="rp-camp">
+            <input type="text" inputmode="decimal" data-camp="valor" aria-label="Valor de ${esc(f.ratio.nom)}" placeholder="${f.ratio.tipus === 'euros' ? 'p. ex. 12.000' : '0,00'}" value="${esc(resp.valor || '')}">
+            <span class="unitat">${unitat}</span>${marca(c && c.valor)}
+          </div>
+          <div class="rp-camp">${interp}</div>
+          ${ambSolucio ? `<div class="rp-solucio">${esc(textCalcul(f))}${f.situacio ? `<br>${esc(f.ratio.interpretacions[f.situacio])}` : ''}</div>` : ''}
+        </div>`;
+    }).join('');
+  }
+
+  $('rp-taula').addEventListener('input', (e) => {
+    const fila = e.target.closest('.rp-fila');
+    if (!fila) return;
+    const resp = rp.respostes[fila.dataset.id] || (rp.respostes[fila.dataset.id] = {});
+    resp[e.target.dataset.camp] = e.target.value;
+    fila.classList.remove('estat-ok', 'estat-error');
+    fila.querySelectorAll('.marca').forEach((m) => m.remove());
+  });
+
+  // Corregeix totes les respostes: un punt per cada valor i per cada interpretació.
+  function corregeixRatios() {
+    const correccio = {};
+    let encerts = 0;
+    let total = 0;
+    for (const f of rp.solucio) {
+      const resp = rp.respostes[f.ratio.id] || {};
+      const llegit = f.ratio.tipus === 'euros' ? motor.llegeixImport(resp.valor || '') : R.llegeixDecimal(resp.valor || '');
+      const valor = R.respostaCorrecta(f.ratio, llegit, f.valor === null ? null : Math.round(f.valor * 100) / 100);
+      correccio[f.ratio.id] = { valor, interp: f.ratio.rang ? resp.interp === f.situacio : null };
+      total += f.ratio.rang ? 2 : 1;
+      encerts += (valor ? 1 : 0) + (f.ratio.rang && resp.interp === f.situacio ? 1 : 0);
+    }
+    return { correccio, encerts, total };
+  }
+
+  function missatgeRp(html, tipus) {
+    $('rp-missatge').className = `missatge ${tipus}`;
+    $('rp-missatge').innerHTML = html;
+    $('rp-missatge').hidden = false;
+  }
+
+  $('rp-corregeix').addEventListener('click', () => {
+    const { correccio, encerts, total } = corregeixRatios();
+    renderTaulaRatios(correccio);
+    if (encerts === total) missatgeRp('<strong>Perfecte!</strong> Totes les ràtios i interpretacions són correctes.', 'bo');
+    else missatgeRp(`<strong>${encerts} de ${total} respostes correctes.</strong> Revisa les marcades amb ✗ o mira la solució.`, 'dolent');
+  });
+
+  $('rp-solucio').addEventListener('click', () => {
+    rp.ajudes++;
+    for (const f of rp.solucio) {
+      rp.respostes[f.ratio.id] = {
+        valor: f.valor === null ? '' : f.ratio.tipus === 'euros' ? formatNumero(f.valor) : formatRatio(f.ratio, f.valor).replace(/\s?%$/, ''),
+        interp: f.situacio || '',
+      };
+    }
+    renderTaulaRatios(null, true);
+    missatgeRp('<strong>Aquesta és la solució</strong>, amb el càlcul de cada ràtio i la seva interpretació.', 'info');
+  });
+
+  $('rp-entrega').addEventListener('click', () => {
+    const { correccio, encerts, total } = corregeixRatios();
+    const nota = Math.round((encerts / total) * 100) / 10;
+    const files = rp.solucio.map((f) => {
+      const resp = rp.respostes[f.ratio.id] || {};
+      const c = correccio[f.ratio.id];
+      const interpResp = f.ratio.rang ? (opcionsInterpretacio(f.ratio).find(([k]) => k === resp.interp) || [, '—'])[1] : '';
+      return `<tr>
+        <td><strong>${esc(f.ratio.nom)}</strong><div class="rp-solucio">${esc(textCalcul(f))}${f.situacio ? `<br>${esc(f.ratio.interpretacions[f.situacio])}` : ''}</div></td>
+        <td class="${c.valor ? 'si' : 'no'}">${esc(resp.valor || '—')} ${c.valor ? '✓' : '✗'}</td>
+        <td class="${c.interp === null ? '' : c.interp ? 'si' : 'no'}">${f.ratio.rang ? `${esc(interpResp)} ${c.interp ? '✓' : '✗'}` : '—'}</td>
+      </tr>`;
+    }).join('');
+    $('rp-final').innerHTML = `
+      <h2>Resultat ${rp.mode === 'examen' ? "del simulacre d'examen" : 'de la pràctica'}: ${esc(rp.escenari.nom)}</h2>
+      <p class="nota">${String(nota).replace('.', ',')} <small>/ 10</small></p>
+      <p>Has encertat <strong>${encerts}</strong> de ${total} respostes${rp.ajudes ? ` (has consultat la solució ${rp.ajudes} ${rp.ajudes > 1 ? 'vegades' : 'vegada'})` : ''}.</p>
+      <div class="taula-desplacable"><table class="resultats taula-rp">
+        <thead><tr><th>Ràtio i solució</th><th>El teu valor</th><th>La teva interpretació</th></tr></thead>
+        <tbody>${files}</tbody>
+      </table></div>
+      <div class="accions">
+        <button class="boto" id="rp-final-torna">Tria una altra empresa</button>
+        <button class="boto primari" id="rp-final-repeteix">Repeteix aquest cas</button>
+      </div>`;
+    $('rp-joc').hidden = true;
+    $('rp-final').hidden = false;
+    $('rp-final-torna').addEventListener('click', () => {
+      rp = null;
+      $('rp-final').hidden = true;
+      $('rp-inici').hidden = false;
+      renderMolles('rpractica');
+      window.scrollTo(0, 0);
+    });
+    $('rp-final-repeteix').addEventListener('click', () => iniciaRatios(rp.mode, rp.escenari.id));
+    window.scrollTo(0, 0);
+    $('rp-final').querySelector('h2').setAttribute('tabindex', '-1');
+    $('rp-final').querySelector('h2').focus({ preventScroll: true });
+  });
+
+  $('rp-surt').addEventListener('click', () => {
+    if (!confirm('Segur que vols sortir? Es perdran les respostes.')) return;
+    rp = null;
+    $('rp-joc').hidden = true;
+    $('rp-inici').hidden = false;
+    renderMolles('rpractica');
+  });
+
+  document.querySelectorAll('[data-rmode]').forEach((b) => b.addEventListener('click', () => iniciaRatios(b.dataset.rmode)));
 
   renderTries();
   window.addEventListener('hashchange', navega);

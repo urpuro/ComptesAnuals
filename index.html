@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Comptes Anuals · Joc pedagògic</title>
   <link rel="icon" href="data:,">
-  <link rel="stylesheet" href="css/estil.css?v=20261020">
+  <link rel="stylesheet" href="css/estil.css?v=20261020c">
 </head>
 <body>
   <header class="capcalera">
@@ -31,6 +31,11 @@
           <span class="opcio-icona" aria-hidden="true">📈</span>
           <strong>Compte de pèrdues i guanys</strong>
           <span>Els ingressos i les despeses de l'exercici, i el resultat que en surt.</span>
+        </a>
+        <a class="opcio targeta" href="#/ratios">
+          <span class="opcio-icona" aria-hidden="true">🧮</span>
+          <strong>Ràtios</strong>
+          <span>Analitza la situació financera i la rendibilitat de l'empresa, com a la selectivitat.</span>
         </a>
       </div>
     </section>
@@ -118,6 +123,34 @@
       </article>
     </section>
 
+    <section id="ratios" class="apartat" hidden>
+      <article class="targeta intro">
+        <h2>Benvingut/da a les ràtios</h2>
+        <p>Una ràtio és un quocient entre dues magnituds dels comptes anuals que ens ajuda a diagnosticar la situació de l'empresa i a comparar-la amb valors de referència, amb altres anys o amb altres empreses.</p>
+        <h3>Dos tipus d'anàlisi</h3>
+        <ul>
+          <li><strong>Anàlisi financera:</strong> l'empresa podrà pagar els seus deutes? Està ben finançada? Es fa amb el balanç de situació.</li>
+          <li><strong>Anàlisi econòmica:</strong> l'empresa és rendible? Combina el balanç amb el compte de pèrdues i guanys.</li>
+        </ul>
+        <p>Per a l'anàlisi, l'actiu corrent es divideix en <strong>existències</strong>, <strong>realitzable</strong> (deutors comercials i altres comptes a cobrar + inversions financeres a curt termini) i <strong>disponible</strong> (efectiu i altres actius líquids). Compte: aquests termes només es fan servir per a l'anàlisi, no per presentar el balanç. Els <strong>deutes</strong> són el passiu corrent més el passiu no corrent, i el <strong>BAII</strong> és el resultat d'explotació.</p>
+        <h3>Les ràtios de la PAU</h3>
+        <div id="ratios-taula"></div>
+        <p class="explicacio ajuda">Font: orientacions de la PAU 2026 de Funcionament de l'Empresa i Disseny de Models de Negoci (annexos 3 i 4). Els valors de referència són orientatius: depenen del tipus d'empresa i del sector.</p>
+
+        <h3>Com vols començar?</h3>
+        <div class="modes">
+          <a class="mode targeta" href="#/ratios/explora">
+            <strong>Explora</strong>
+            <span>Segueix la història d'una empresa i mira com canvien les ràtios amb cada operació.</span>
+          </a>
+          <a class="mode targeta" href="#/ratios/practica">
+            <strong>Practica</strong>
+            <span>Calcula i interpreta les ràtios dels comptes anuals d'una empresa, com a l'examen.</span>
+          </a>
+        </div>
+      </article>
+    </section>
+
     <section id="explora" class="apartat" hidden>
       <div id="exp-tria">
         <div class="benvinguda">
@@ -162,6 +195,10 @@
           <div id="exp-pig"></div>
         </section>
       </div>
+      <details class="targeta panell-ratios" id="exp-panell-ratios">
+        <summary><h3>Ràtios financeres i de rendibilitat</h3></summary>
+        <div id="exp-ratios"></div>
+      </details>
       </div>
     </section>
 
@@ -218,13 +255,66 @@
 
       <div id="prac-final" class="targeta" hidden></div>
     </section>
+
+    <section id="rpractica" class="apartat" hidden>
+      <div id="rp-inici" class="targeta">
+        <h2>Calcula i interpreta les ràtios</h2>
+        <p>Tindràs el balanç de situació i el compte de pèrdues i guanys d'una empresa a 31 de desembre. Has de calcular el fons de maniobra, les ràtios financeres i les rendibilitats, i dir si cada ràtio està per sota, dins o per sobre del seu valor de referència.</p>
+        <h3>1. Tria l'empresa</h3>
+        <div id="rp-opcions" class="opcions-escenari" role="radiogroup" aria-label="Empresa"></div>
+        <h3>2. Tria el mode per començar</h3>
+        <div class="modes">
+          <button class="mode targeta" data-rmode="practica">
+            <strong>Pràctica</strong>
+            <span>Pots corregir les respostes i veure la solució amb el càlcul detallat.</span>
+          </button>
+          <button class="mode targeta" data-rmode="examen">
+            <strong>Simulacre d'examen</strong>
+            <span>Sense correcció fins que entreguis. Veuràs la nota i els errors al final.</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="rp-joc" hidden>
+        <div class="escenari-cap"><span id="rp-nom"></span><span id="rp-mode" class="etiqueta"></span></div>
+        <article class="targeta pas">
+          <p id="rp-enunciat" class="enunciat"></p>
+          <p class="explicacio ajuda">Escriu el fons de maniobra en euros, les ràtios amb dos decimals (p. ex. 1,25) i les rendibilitats en percentatge amb dos decimals (p. ex. 18,46).</p>
+        </article>
+        <div class="estats">
+          <section class="targeta">
+            <h3>Balanç de situació</h3>
+            <div id="rp-balanc"></div>
+          </section>
+          <section class="targeta">
+            <h3>Compte de pèrdues i guanys</h3>
+            <div id="rp-pig"></div>
+          </section>
+        </div>
+        <section class="targeta">
+          <h3>Les teves ràtios</h3>
+          <div id="rp-taula"></div>
+        </section>
+        <div id="rp-missatge" class="missatge" hidden role="status" aria-live="polite"></div>
+        <div class="accions enganxades">
+          <button id="rp-surt" class="boto">Surt</button>
+          <button id="rp-solucio" class="boto">Mostra la solució</button>
+          <button id="rp-corregeix" class="boto">Corregeix</button>
+          <button id="rp-entrega" class="boto primari">Entrega</button>
+        </div>
+      </div>
+
+      <div id="rp-final" class="targeta" hidden></div>
+    </section>
   </main>
 
-  <script src="js/pgc.js?v=20261020"></script>
-  <script src="js/escenaris/exploracions.js?v=20261020"></script>
-  <script src="js/escenaris/practiques.js?v=20261020"></script>
-  <script src="js/escenaris/pig.js?v=20261020"></script>
-  <script src="js/motor.js?v=20261020"></script>
-  <script src="js/app.js?v=20261020"></script>
+  <script src="js/pgc.js?v=20261020c"></script>
+  <script src="js/escenaris/exploracions.js?v=20261020c"></script>
+  <script src="js/escenaris/practiques.js?v=20261020c"></script>
+  <script src="js/escenaris/pig.js?v=20261020c"></script>
+  <script src="js/escenaris/ratios.js?v=20261020c"></script>
+  <script src="js/motor.js?v=20261020c"></script>
+  <script src="js/ratios.js?v=20261020c"></script>
+  <script src="js/app.js?v=20261020c"></script>
 </body>
 </html>

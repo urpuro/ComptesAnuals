@@ -19,13 +19,13 @@
     { id: 'altres', nom: "Altres despeses d'explotació" },
     { id: 'amort', nom: "Amortització de l'immobilitzat" },
     { id: 'alien', nom: "Deteriorament i resultat per alienacions de l'immobilitzat" },
-    { subtotal: 'explotacio', nom: "A.1) Resultat d'explotació", inclou: ['xifra', 'aprov', 'altres_ing', 'personal', 'altres', 'amort', 'alien'] },
+    { subtotal: 'explotacio', nom: "A.1) Resultat d'explotació (BAII)", inclou: ['xifra', 'aprov', 'altres_ing', 'personal', 'altres', 'amort', 'alien'] },
     { id: 'ing_fin', nom: 'Ingressos financers' },
     { id: 'desp_fin', nom: 'Despeses financeres' },
     { subtotal: 'financer', nom: 'A.2) Resultat financer', inclou: ['ing_fin', 'desp_fin'] },
-    { subtotal: 'bai', nom: "A.3) Resultat abans d'impostos", inclou: ['explotacio', 'financer'] },
+    { subtotal: 'bai', nom: "A.3) Resultat abans d'impostos (BAI)", inclou: ['explotacio', 'financer'] },
     { id: 'impost', nom: 'Impost sobre beneficis' },
-    { subtotal: 'resultat', nom: "A.4) Resultat de l'exercici", inclou: ['bai', 'impost'], final: true },
+    { subtotal: 'resultat', nom: "A.4) Resultat de l'exercici (BN)", inclou: ['bai', 'impost'], final: true },
   ];
 
   // massa: on va el compte al balanç. pig: partida del compte de pèrdues i guanys.

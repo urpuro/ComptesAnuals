@@ -143,7 +143,7 @@
 
   // Converteix un text com "60.000", "-6.000" o "1.234,50" en número.
   function llegeixImport(text) {
-    const net = String(text).trim().replace(/\s|€/g, '').replace(/\./g, '').replace(',', '.');
+    const net = String(text).trim().replace(/−/g, '-').replace(/\s|€/g, '').replace(/\./g, '').replace(',', '.');
     if (!/^[-+]?\d+(\.\d+)?$/.test(net)) return NaN;
     return Number(net);
   }

@@ -28,7 +28,10 @@ Llista orientativa d'idees per fer créixer l'aplicatiu. No és un compromís ni
 - [ ] Barrejar l'ordre dels passos quan sigui possible, o generar imports aleatoris.
 - [ ] Revisar a la pantalla final el balanç de l'alumne al costat del correcte, pas a pas.
 - [x] Puntuació i retroacció immediata amb explicació dels errors habituals.
-- [ ] Preguntes de comprensió al final de l'escenari (p. ex. fons de maniobra, ràtios senzilles).
+- [x] Ràtios de la PAU (annexos 3 i 4): explicació, evolució a les exploracions i pràctica de càlcul i interpretació.
+- [ ] Preguntes tipus test com les de l'exercici 4 de la PAU.
+- [ ] Punt mort i productivitats (annexos 5 i 6 de les orientacions de la PAU).
+- [ ] Presentar el balanç agrupat segons el model de l'annex 1 de la PAU.
 
 ## 4. Contingut
 - [ ] Decidir si es presenta el balanç compte a compte (com ara) o agrupat per epígrafs del model oficial (Immobilitzat material, Deutors comercials...).

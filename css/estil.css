@@ -147,6 +147,7 @@ details summary { cursor: pointer; color: var(--primari); margin-top: .5em; }
 .benvinguda h2 { font-size: 1.6rem; }
 .benvinguda p { color: var(--suau); font-size: 1.05rem; }
 .opcions { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; max-width: 800px; margin: 0 auto; }
+#inici .opcions { grid-template-columns: repeat(3, 1fr); max-width: 1000px; }
 .opcio {
   display: flex; flex-direction: column; gap: 6px; color: inherit; text-decoration: none;
   padding: 24px; margin: 0; position: relative; transition: border-color .15s, transform .15s;
@@ -214,6 +215,45 @@ a.mode:focus-visible { outline: 2px solid var(--primari); outline-offset: 2px; }
 .subtotal-pig.final { border-top: 2px solid var(--text); font-size: 1.05rem; }
 .ajuda { font-size: .88rem; }
 
+/* Ràtios */
+.intro ul { padding-left: 20px; }
+.taula-desplacable { overflow-x: auto; }
+.taula-ratios td, .taula-ratios th { text-align: left !important; width: auto !important; white-space: normal !important; font-size: .9rem; }
+.panell-ratios { margin-top: 16px; }
+.panell-ratios summary { cursor: pointer; list-style: revert; }
+.panell-ratios summary h3 { display: inline; margin: 0; }
+.panell-ratios[open] summary { margin-bottom: 8px; }
+#exp-panell-ratios:first-child, .estats + .panell-ratios { margin-bottom: 16px; }
+.ratios-graella { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin-bottom: 12px; }
+.ratio { border: 1px solid var(--vora); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.ratio.canviada { background: var(--destaca); }
+.ratio-cap { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 4px 6px; }
+.ratio-valor { font-size: 1.4rem; font-weight: 700; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+.ratio-formula { font-size: .8rem; color: var(--suau); }
+.ratio-calcul { font-size: .8rem; font-variant-numeric: tabular-nums; }
+.ratio-ref { font-size: .78rem; color: var(--suau); margin-top: 4px; }
+.situacio { font-size: .7rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
+.situacio-ok { background: var(--puja-fons); color: var(--puja); }
+.situacio-baix, .situacio-alt { background: var(--baixa-fons); color: var(--baixa); }
+.rp-fila {
+  display: grid; grid-template-columns: minmax(180px, 1.2fr) minmax(140px, .8fr) minmax(200px, 1.2fr); gap: 8px 12px;
+  align-items: center; padding: 10px 8px; border-bottom: 1px solid var(--vora); border-radius: 6px;
+}
+.rp-nom { display: flex; flex-direction: column; }
+.rp-nom span { font-size: .8rem; color: var(--suau); }
+.rp-camp { display: flex; align-items: center; gap: 6px; }
+.rp-camp input, .rp-camp select {
+  font: inherit; font-size: .9rem; padding: 6px; border: 1px solid var(--vora); border-radius: 6px;
+  background: var(--targeta); color: var(--text); min-width: 0; width: 100%;
+}
+.rp-camp input { text-align: right; font-variant-numeric: tabular-nums; }
+.unitat { color: var(--suau); width: 1em; }
+.sense-interp { font-size: .82rem; color: var(--suau); }
+.rp-fila.estat-ok { background: var(--puja-fons); }
+.rp-fila.estat-error { background: var(--baixa-fons); }
+.rp-solucio { grid-column: 1 / -1; font-size: .85rem; color: var(--suau); }
+.taula-rp td:not(:first-child) { white-space: normal !important; }
+
 /* Practica */
 .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
 .mode { text-align: left; font: inherit; color: inherit; cursor: pointer; display: flex; flex-direction: column; gap: 4px; margin: 0; }
@@ -264,6 +304,8 @@ a.mode:focus-visible { outline: 2px solid var(--primari); outline-offset: 2px; }
 @media (max-width: 800px) {
   .estats, .balanc, .modes, .opcions { grid-template-columns: 1fr; }
   .estats.pig-primer { grid-template-columns: 1fr; }
+  #inici .opcions { grid-template-columns: 1fr; }
+  .rp-fila { grid-template-columns: 1fr; }
   .consell { display: none; }
 }
 @media (max-width: 520px) {
